@@ -91,4 +91,11 @@ namespace BMS
 		double f;  /*!< Pool fraction */
 		double k;  /*!< Exchange rate [Hz] */
 	};
+
+	struct PulseSample
+	{
+		double magnitude;
+		double phase;
+		double timestep;
+	};
 }

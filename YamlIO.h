@@ -35,7 +35,7 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	catch (...)
 	{
 		std::cout << "Coul not read offset_ppm" << std::endl;
-		return EXIT_FAILURE;
+		return false;
 	}
 
 	// check for data to fit
@@ -45,7 +45,7 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 
 		if (sp.numPPMSamples != fit_data.size()) {
 			std::cout << "offsets and fit data have different no of entries" << std::endl;
-			return EXIT_FAILURE;
+			return false;
 		}
 		sp.FitData.resize(sp.numPPMSamples);
 		for (int sample = 0; sample < sp.numPPMSamples; sample++)
@@ -54,7 +54,7 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	catch (...)
 	{
 		std::cout << "Could not readfit data" << std::endl;
-		return EXIT_FAILURE;
+		return false;
 	}
 
 	// water pool
@@ -69,7 +69,7 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	catch (...)
 	{
 		std::cout << "Coul not read water_pool" << std::endl;
-		return EXIT_FAILURE;
+		return false;
 	}
 
 	// mt pool
@@ -94,7 +94,7 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 			}
 			else {
 				std::cout << "No valid MT Lineshape! Use None, Lorentzian or SuperLorentzian" << std::endl;
-				return EXIT_FAILURE;
+				return false;
 			}
 		}
 		else {
@@ -105,7 +105,7 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	catch (...)
 	{
 		std::cout << "Coul not read mt_pool" << std::endl;
-		return EXIT_FAILURE;
+		return false;
 	}
 
 	// cest pools
@@ -134,7 +134,7 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	catch (...)
 	{
 		std::cout << "Coul not read cest_pool" << std::endl;
-		return EXIT_FAILURE;
+		return false;
 	}
 	
 	// read pulseq sequence
@@ -146,7 +146,7 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	catch (...)
 	{
 		std::cout << "Coul not read pulseq file" << std::endl;
-		return EXIT_FAILURE;
+		return false;
 	}
 
 	// read ther stuff sequence
@@ -158,7 +158,7 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	catch (...)
 	{
 		std::cout << "Could not read pulseq file" << std::endl;
-		return EXIT_FAILURE;
+		return false;
 	}
 
 
@@ -182,6 +182,6 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	// enough for now we come to the rest later
 	sp.verboseMode = false;
 	
-	return EXIT_SUCCESS;
+	return true;
 
 }
