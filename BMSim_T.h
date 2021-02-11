@@ -19,71 +19,65 @@ You should have received a copy of the GNU General Public License along with thi
 
 #include "BlochMatrix.h"
 #include "BlochMcConnellSolver.h"
+#include "gsl/gsl_vector.h"
 
 //! Runs the Z-spectrum simulation
 /*!
    \param sp SimulationParameters object containing pool and pulse info
 */
-template <int size> void BMSim_T(SimulationParameters& sp)
+template <int size> int BMSim_T(const gsl_vector * x, void *data, gsl_vector * f)
 {
-	typedef Matrix<double, size, 1> VectorNd; 
-	typedef Matrix<double, size, size> MatrixNd;
-
-	BlochMatrix<size> ABase(sp); // init base matrix with fixed pool parameters
-	VectorNd C; // vector containing relaxation paremeters
-
-	if (size == Dynamic){ // alocate space for dynamic matrices
-		C.resize(sp.Mvec.rows());
+	
+	SimulationParameters* sp = ((SimulationParameters*)data);
+	// update params
+	for (int np = 0; np < sp->GetNumberOfCESTPools(); np++)
+	{
+		sp->GetCESTPool(np)->SetExchangeRateInHz(gsl_vector_get(x, np));
+		std::cout << sp->GetCESTPool(np)->GetExchangeRateInHz() << std::endl;  
 	}
+	
 
-	// set entries
-	C.setConstant(0.0);
-	int nP = sp.numberOfCESTPools;
-	C((nP + 1) * 2) = sp.waterPool.f * sp.waterPool.R1; // water
-	for (int p = 0; p < nP; p++) { // vest
-		C((nP + 1) * 2 + (p+1)) = sp.cestPool[p].f*sp.cestPool[p].R1;
-	}
-
-	if (sp.simulateMTPool) { // set MT related info
-		C(3*(nP + 1)) = sp.mtPool.f*sp.mtPool.R1;
-		sp.CalculateMTLineshape();
-	}
-
-	double w0 = sp.scanner.B0*sp.scanner.Gamma; // omega0 [rad/s]
-	double b0inhomogeneity = sp.scanner.B0Inhomogeneity*w0; //b0 inhomogeneity
-
-#if defined(_OPENMP)
-	//set number of threads for openmp
-	omp_set_num_threads(sp.numberOfThreads);
-#endif
-
-//calculate the different samples of the Z-spectrum parallel
-#pragma omp parallel for
-	for (int k = 0; k < sp.numPPMSamples; k++) {
-		double dw0 = sp.PPMVector[k] * w0; //current frequency offset [rad/s]
-		BlochMatrix<size> A(ABase); // get copy of bloch matrix
-		
-		int l = 0; // loop variable
-		while (l < sp.pulseTrain.NumberOfSaturationPulses) { // loop through pulses
-			for (int m = 0; m < sp.pulseShape.NumberOfSamples; m++)	{ // loop through pulse samples
-				double rfAmplitude  = sp.pulseShape.Amplitude[m]; // current w1 [rad/s]
-				double rfTimestep   = sp.pulseShape.Timesteps[m];  // duration of current pulse sample [s]
-				double rfFrequency  = sp.pulseShape.hasFrequencyOffset ? sp.pulseShape.Frequency[m] : 0.0; // current pulse frequency offset [rad/s]
-				double rfPhase      = sp.pulseShape.hasPhaseOffset     ? sp.pulseShape.Phase[m]     : 0.0; // current pulse phase offset [rad]
-				A.UpdateA(sp, rfAmplitude, rfFrequency + dw0, rfPhase, b0inhomogeneity, sp.simulateMTPool ? pow(rfAmplitude, 2)*sp.RrfcContainer[k] : 0.0); // set pulse
-				sp.Mvec.col(k) = SolveBlochEquation<size>(sp.Mvec.col(k), A.GetBlochMatrix(), C, rfTimestep); // and solve the equation
+	BlochMcConnellSolver<size> bm_solver = BlochMcConnellSolver<size>(*sp);
+	for (int i = 0; i < sp->GetADCPositions()->size(); i++)
+	{
+		double accummPhase = 0;
+		Matrix<double, size, 1> M = sp->GetMagnetizationVectors()->col(i);
+		// parfor is poosible here
+		int startIdx = i == 0 ? 0 : sp->GetADCPositions()->at(i - 1);
+		for (int j = startIdx; j < sp->GetADCPositions()->at(i); j++)
+		{
+			SeqBlock* seqBlock = sp->GetExternalSequence()->GetBlock(j);
+			if (seqBlock->isADC()) {
+				gsl_vector_set(f, i, M(2* (sp->GetNumberOfCESTPools() + 1)) - sp->GetFitData()->at(i));
 			}
-
-			if (++l < sp.pulseTrain.NumberOfSaturationPulses) { // pause between pulses
-				if (sp.pulseTrain.Spoiling)	{ // "spoiling"
-					for (int p = 0; p < (nP+1)*2; p++) { //spoiling is simulated by setting all the transverse magnetization to 0
-						sp.Mvec(p, k) = 0;
-					}
+			else if (seqBlock->isTrapGradient(0) && seqBlock->isTrapGradient(1) && seqBlock->isTrapGradient(2)) {
+				for (int i = 0; i < (sp->GetNumberOfCESTPools() + 1) * 2; i++)
+					M[i] = 0.0;
+			}
+			else if (seqBlock->isRF())
+			{
+				auto p = std::make_pair(seqBlock->GetRFEvent().magShape, seqBlock->GetRFEvent().phaseShape);
+				std::vector<PulseSample>* pulseSamples = sp->GetUniquePulse(p);
+				double rfFrequency = seqBlock->GetRFEvent().freqOffset;
+				for (int p = 0; p < pulseSamples->size(); p++)
+				{
+					bm_solver.UpdateBlochMatrix(*sp, pulseSamples->at(p).magnitude, rfFrequency, pulseSamples->at(p).phase - accummPhase);
+					bm_solver.SolveBlochEquation(M, pulseSamples->at(p).timestep);
 				}
-				A.UpdateA(sp, 0.0, 0.0, 0.0, b0inhomogeneity); // set pulse to 0 during pause
-				sp.Mvec.col(k) = SolveBlochEquation<size>(sp.Mvec.col(k), A.GetBlochMatrix(), C, sp.pulseTrain.PauseBetweenPulses); // and solve the equation
+				int phaseDegree = seqBlock->GetDuration() * 1e-6 * 360 * rfFrequency;
+				phaseDegree %= 360;
+				accummPhase += double(phaseDegree) / 180 * PI;
 			}
+			else { // delay or single gradient -> simulated as delay
+				double timestep = seqBlock->GetDuration()*1e-6;
+				bm_solver.UpdateBlochMatrix(*sp, 0, 0, 0);
+				bm_solver.SolveBlochEquation(M, timestep);
+			}
+
+			delete seqBlock;
 		}
 	}
+
+	return GSL_SUCCESS;
 }
 

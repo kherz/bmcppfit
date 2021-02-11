@@ -23,33 +23,14 @@ You should have received a copy of the GNU General Public License along with thi
 bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 {
 	YAML::Node config = YAML::LoadFile(yamlIn);
-	// check for offsets
-	try
-	{
-		auto offsets_ppm = config["offsets_ppm"];
-		sp.numPPMSamples = offsets_ppm.size();
-		sp.PPMVector.resize(sp.numPPMSamples);
-		for (int sample = 0; sample < sp.numPPMSamples; sample++)
-			sp.PPMVector[sample] = (offsets_ppm[sample].as<double>());
-	}
-	catch (...)
-	{
-		std::cout << "Coul not read offset_ppm" << std::endl;
-		return false;
-	}
-
-	// check for data to fit
+	// get data to fir
 	try
 	{
 		auto fit_data = config["fit_data"];
-
-		if (sp.numPPMSamples != fit_data.size()) {
-			std::cout << "offsets and fit data have different no of entries" << std::endl;
-			return false;
-		}
-		sp.FitData.resize(sp.numPPMSamples);
-		for (int sample = 0; sample < sp.numPPMSamples; sample++)
-			sp.FitData[sample] = (fit_data[sample].as<double>());
+		auto n = fit_data.size();
+		sp.GetFitData()->resize(n);
+		for (int sample = 0; sample < n; sample++)
+			sp.GetFitData()->at(sample) = (fit_data[sample].as<double>());
 	}
 	catch (...)
 	{
@@ -61,14 +42,14 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	try
 	{
 		auto water_pool = config["water_pool"];
-		sp.waterPool.f = water_pool["f"].as<double>();
-		sp.waterPool.R1 = 1.0 / water_pool["t1"].as<double>();
-		sp.waterPool.R2 = 1.0 / water_pool["t2"].as<double>();
-		sp.waterPool.dw = 0; // remove later
+		auto f = water_pool["f"].as<double>();
+		auto r1 = 1.0 / water_pool["t1"].as<double>();
+		auto r2 = 1.0 / water_pool["t2"].as<double>();
+		sp.SetWaterPool(WaterPool(r1, r2, f));
 	}
 	catch (...)
 	{
-		std::cout << "Coul not read water_pool" << std::endl;
+		std::cout << "Could not read water_pool" << std::endl;
 		return false;
 	}
 
@@ -77,30 +58,26 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	{
 		auto mt_pool = config["mt_pool"];
 		if (mt_pool.IsDefined()) {
-			sp.mtPool.f = mt_pool["f"].as<double>();
-			sp.mtPool.R1 = 1.0 / mt_pool["t1"].as<double>();
-			sp.mtPool.R2 = 1.0 / mt_pool["t2"].as<double>();
-			sp.mtPool.k = mt_pool["k"].as<double>();
-			sp.mtPool.f = mt_pool["f"].as<double>();
+			auto f = mt_pool["f"].as<double>();
+			auto r1 = 1.0 / mt_pool["t1"].as<double>();
+			auto r2 = 1.0 / mt_pool["t2"].as<double>();
+			auto k = mt_pool["k"].as<double>();
+			auto dw = mt_pool["dw"].as<double>();
 			std::string sring_ls = mt_pool["lineshape"].as<std::string>();
 			if(sring_ls.compare("Lorentzian") == 0) {
-				sp.mtPool.lineshape = Lorentzian;
+				sp.SetMTPool(MTPool(r1, r2, f, dw, k, Lorentzian));
 			}
 		    else if (sring_ls.compare("SuperLorentzian") == 0) {
-			   sp.mtPool.lineshape = SuperLorentzian;
+				sp.SetMTPool(MTPool(r1, r2, f, dw, k, SuperLorentzian));
 			}
 			else if (sring_ls.compare("None") == 0) {
-				sp.mtPool.lineshape = None;
+				sp.SetMTPool(MTPool(r1, r2, f, dw, k, None));
 			}
 			else {
 				std::cout << "No valid MT Lineshape! Use None, Lorentzian or SuperLorentzian" << std::endl;
 				return false;
 			}
 		}
-		else {
-			sp.simulateMTPool = false;
-		}
-		
 	}
 	catch (...)
 	{
@@ -113,35 +90,60 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	{
 		auto cest_pools = config["cest_pool"];
 		if (cest_pools.IsDefined()) {
-			sp.numberOfCESTPools = cest_pools.size();
-			sp.cestPool = new CESTPool[sp.numberOfCESTPools];
-			sp.cestMemAllocated = true;
+			sp.InitCESTPoolMemory(cest_pools.size());
 			int i = 0;
 			for (YAML::const_iterator it = cest_pools.begin(); it != cest_pools.end(); ++it) {
 				auto c_pool = it->second.as<YAML::Node>();
-				sp.cestPool[i].R1 = 1.0 / c_pool["t1"].as<double>();
-				sp.cestPool[i].R2 = 1.0 / c_pool["t2"].as<double>();
-				sp.cestPool[i].f = c_pool["f"].as<double>();
-				sp.cestPool[i].k = c_pool["k"].as<double>();
-				sp.cestPool[i++].dw = c_pool["dw"].as<double>();
+				auto r1 = 1.0 / c_pool["t1"].as<double>();
+				auto r2 = 1.0 / c_pool["t2"].as<double>();
+				auto f = c_pool["f"].as<double>();
+				auto k = c_pool["k"].as<double>();
+				auto dw = c_pool["dw"].as<double>();
+				sp.SetCESTPool(CESTPool(r1, r2, f, dw, k), i++);
 			}
 		}
-		else {
-			sp.numberOfCESTPools = 0;
-		}
-
 	}
 	catch (...)
 	{
 		std::cout << "Coul not read cest_pool" << std::endl;
 		return false;
 	}
-	
+
+	// get scaling of vector
+	double scale = 1.0;
+	try
+	{
+		auto scaleNode = config["scale"];
+		if (scaleNode.IsDefined()) {
+			scale = scaleNode.as<double>();
+		}
+	}
+	catch (...)
+	{
+		std::cout << "Could not read pulseq file" << std::endl;
+		return false;
+	}
+
+	// put together magnetization vector
+	int ncp = sp.GetNumberOfCESTPools();
+	int vecSize = (3 * (ncp + 1)) + (sp.IsMTActive() ? 1 : 0);
+	Eigen::VectorXd M(vecSize);
+	M(2 * (ncp + 1)) = sp.GetWaterPool()->GetFraction();
+	for (int i = 0; i < ncp; i++) {
+		M(2 * (ncp + 1) + i + 1) = sp.GetCESTPool(i)->GetFraction();
+	}
+	if (sp.IsMTActive())
+		M(vecSize - 1) = sp.GetMTPool()->GetFraction();
+	// scale
+	M *= scale;
+	// init with same number as fit data
+	sp.InitMagnetizationVectors(M, sp.GetFitData()->size());
+
 	// read pulseq sequence
 	try
 	{
 		auto seq_fn = config["pulseq_file"];
-		sp.seq.load(seq_fn.as<std::string>());
+		sp.SetExternalSequence(seq_fn.as<std::string>());
 	}
 	catch (...)
 	{
@@ -153,13 +155,29 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	try
 	{
 		auto b0 = config["b0"];
-		sp.scanner.B0 = b0.as<double>();
+		sp.InitScanner(b0.as<double>());
+	}
+	catch (...)
+	{
+		std::cout << "Could not read scanner stuff" << std::endl;
+		return false;
+	}
+
+	// get scaling of vector
+	int maxSamples = 200;
+	try
+	{
+		auto samplesNode = config["max_pulse_samples"];
+		if (samplesNode.IsDefined()) {
+			maxSamples = samplesNode.as<double>();
+		}
 	}
 	catch (...)
 	{
 		std::cout << "Could not read pulseq file" << std::endl;
 		return false;
 	}
+	sp.SetMaxNumberOfPulseSamples(maxSamples);
 
 
 #if defined (_OPENMP)
@@ -180,7 +198,7 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 #endif
 
 	// enough for now we come to the rest later
-	sp.verboseMode = false;
+	sp.SetVerbose(false);
 	
 	return true;
 

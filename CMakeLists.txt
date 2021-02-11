@@ -93,10 +93,10 @@ if(NOT pulseq_POPULATED)
 endif()
 
 
-set(SOURCE_FILES BMS.h
-                 BlochMcConnellSolver.h
-                 BlochMatrix.h
+set(SOURCE_FILES BlochMcConnellSolver.h
+                 NLSFit.h
                  SimulationParameters.h
+				 SimulationParameters.cpp
                  BMSim_T.h
 				 BMSimFit.h
 				 YamlIO.h
