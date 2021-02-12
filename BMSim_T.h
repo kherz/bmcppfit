@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License along with thi
 
 #pragma once
 
-#include "BlochMatrix.h"
+//#include "BlochMatrix.h"
 #include "BlochMcConnellSolver.h"
 #include "gsl/gsl_vector.h"
 
@@ -28,12 +28,14 @@ You should have received a copy of the GNU General Public License along with thi
 template <int size> int BMSim_T(const gsl_vector * x, void *data, gsl_vector * f)
 {
 	
-	SimulationParameters* sp = ((SimulationParameters*)data);
+	SimulationParameters* sp = ((struct FitFunctionParams*)data)->sp;
+	std::vector<FitPoint>* fp = ((struct FitFunctionParams*)data)->fp;
 	// update params
 	for (int np = 0; np < sp->GetNumberOfCESTPools(); np++)
 	{
+		//gsl_vector_set(x, np, max(min(gsl_vector_get(x, np), fp->at(np).upper), fp->at(np).lower));
 		sp->GetCESTPool(np)->SetExchangeRateInHz(gsl_vector_get(x, np));
-		std::cout << sp->GetCESTPool(np)->GetExchangeRateInHz() << std::endl;  
+		//std::cout << sp->GetCESTPool(np)->GetExchangeRateInHz() << std::endl;  
 	}
 	
 
@@ -44,6 +46,7 @@ template <int size> int BMSim_T(const gsl_vector * x, void *data, gsl_vector * f
 		Matrix<double, size, 1> M = sp->GetMagnetizationVectors()->col(i);
 		// parfor is poosible here
 		int startIdx = i == 0 ? 0 : sp->GetADCPositions()->at(i - 1);
+#pragma omp parallel for
 		for (int j = startIdx; j < sp->GetADCPositions()->at(i); j++)
 		{
 			SeqBlock* seqBlock = sp->GetExternalSequence()->GetBlock(j);
@@ -77,6 +80,8 @@ template <int size> int BMSim_T(const gsl_vector * x, void *data, gsl_vector * f
 			delete seqBlock;
 		}
 	}
+
+
 
 	return GSL_SUCCESS;
 }

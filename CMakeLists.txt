@@ -57,7 +57,7 @@ FetchContent_Declare(
 		eigen
 		GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
 		GIT_SHALLOW	ON
-		GIT_TAG 3.3.8
+		GIT_TAG 3.3.9
 	)
 FetchContent_GetProperties(eigen)
 if(NOT eigen_POPULATED)
@@ -110,6 +110,12 @@ include_directories(BEFORE SYSTEM ${yaml-cpp_SOURCE_DIR} ${yaml-cpp_BINARY_DIR}/
 include_directories(${eigen_SOURCE_DIR})
 include_directories(${argh_SOURCE_DIR})
 include_directories(${pulseq_SOURCE_DIR}/src)
+
+find_package(OpenMP)
+if(OpenMP_CXX_FOUND)
+    add_compile_options(-DEIGEN_DONT_PARALLELIZE)
+    target_link_libraries(bmcppfit OpenMP::OpenMP_CXX)
+endif()
 
 
 target_link_libraries(bmcppfit gsl)

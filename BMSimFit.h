@@ -48,7 +48,6 @@ bool RunBMSimFit(std::string yamlIn, std::string yamlOut)
 		double k = sp.GetCESTPool(np)->GetExchangeRateInHz();
 		fit.AddFreeParameter(k, k / 2, 2 * k);
 	}
-	
 	/* For a small number of pools the matrix size can be set at compile time. This ensures allocation on the stack and therefore a faster simulation. 
 	   This speed advantade vanishes for more pools and can even result in a stack overflow for very large matrices
 	   In this case more than 3 pools are simulated with dynamic matrices, but this could be expanded eventually
@@ -56,20 +55,24 @@ bool RunBMSimFit(std::string yamlIn, std::string yamlOut)
 	switch (sp.GetNumberOfCESTPools())
 	{
 	case 0:
-		sp.IsMTActive() ? fit.Init(BMSim_T<4>, sp) : fit.Init(BMSim_T<3>, sp); // only water
+		sp.IsMTActive() ? fit.RunFit(BMSim_T<4>, sp) : fit.RunFit(BMSim_T<3>, sp); // only water
 		break;
 	case 1:
-		sp.IsMTActive() ? fit.Init(BMSim_T<7>, sp) : fit.Init(BMSim_T<6>, sp); // one cest pool
+		sp.IsMTActive() ? fit.RunFit(BMSim_T<7>, sp) : fit.RunFit(BMSim_T<6>, sp); // one cest pool
 		break;
-	//case 2:
-	//	sp.IsMTActive() ? Sim_pulseqSBB_T<10>(sp) : Sim_pulseqSBB_T<9>(sp); // two cest pools
-	//	break;
+	case 2:
+		sp.IsMTActive() ? fit.RunFit(BMSim_T<10>, sp) : fit.RunFit(BMSim_T<9>,sp); // two cest pools
+		break;
 	//case 3:
 	//	sp.IsMTActive() ? Sim_pulseqSBB_T<13>(sp) : Sim_pulseqSBB_T<12>(sp); // three cest pools
 	//	break;
 	default:
-		fit.Init(BMSim_T<Dynamic>, sp); // > three pools
+		fit.RunFit(BMSim_T<Dynamic>, sp); // > three pools
 		break;
 	}
+
+	if (!WriteFitResult(yamlOut, fit.GetFitParams()))
+		return EXIT_FAILURE;
+
 	return EXIT_SUCCESS;
 }

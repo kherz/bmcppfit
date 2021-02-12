@@ -61,6 +61,14 @@ struct PulseSample
 	double timestep;   /*!< pulse sample duration [rad]*/
 };
 
+struct FitPoint
+{
+	double current;
+	double lower;
+	double upper;
+};
+
+
 //! Shape of the magnetization transfer pool
 enum MTLineshape
 {
@@ -320,3 +328,7 @@ protected:
 };
 
 
+struct FitFunctionParams {
+	SimulationParameters* sp;
+	std::vector<FitPoint>* fp;
+};

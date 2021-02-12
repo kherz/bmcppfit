@@ -186,13 +186,13 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	int maxThreads = omp_get_max_threads();
 	try {
 		auto threads = config["threads"];
-		int inputThreads = b0.as<int>();
+		int inputThreads = threads.as<int>();
 		sp.numberOfThreads = inputThreads <= maxThreads ? inputThreads : maxThreads;
 	}
 	catch (...) {
-			sp.numberOfThreads = 1;
-		}
+		sp.numberOfThreads = 1;
 	}
+	omp_set_num_threads(sp.numberOfThreads);
 #else
 	sp.numberOfThreads = 1;
 #endif
@@ -202,4 +202,28 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	
 	return true;
 
+}
+
+
+
+bool WriteFitResult(std::string yamlOut, std::vector<FitPoint>* fitResult)
+{
+	try
+	{
+		YAML::Node node;
+		std::ofstream fout(yamlOut);
+		for (int i = 0; i < fitResult->size(); i++)
+		{
+			std::string nodestr = "Fit param " + std::to_string(i) + " : " + std::to_string(fitResult->at(i).current);
+			node = YAML::Load(nodestr);
+			fout << node << std::endl;
+		}
+		fout.close();
+	}
+	catch (...)
+	{
+		std::cout << "Could not write results file" << std::endl;
+		return false;
+	}
+	return true;
 }
