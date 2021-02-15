@@ -10,7 +10,7 @@ int main(int argc, char** argv)
 	auto cmdl = argh::parser(argc, argv);
 
 	// help wished?
-	if(cmdl({ "-h", "--help" })) {
+	if(cmdl[{ "-h", "--help" }]) {
 		cout << "A command-line based BlochMcConnell fit routine for fast multi-thread fitting." << endl;
 		cout << "Please provide the following parameters with -<flag>=<param>" << endl;
 		cout << "-p: .yaml-file with all specifications. See example file for help" << endl;
@@ -21,7 +21,8 @@ int main(int argc, char** argv)
 	// check for yaml params
 	string param_file;
 	if (!cmdl( "-p")) {
-		cerr << "Parameter file not provided" << endl;
+		cout << "Parameter file not provided" << endl;
+		return EXIT_FAILURE;
 	}
 	else {
 		param_file = cmdl("-p").str();
