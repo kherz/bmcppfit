@@ -19,7 +19,6 @@ You should have received a copy of the GNU General Public License along with thi
 
 //#include "BlochMatrix.h"
 #include "BlochMcConnellSolver.h"
-#include "gsl/gsl_vector.h"
 
 //! Runs the Z-spectrum simulation
 /*!
