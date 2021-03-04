@@ -40,5 +40,5 @@ int main(int argc, char** argv)
 		cout << "Writing output to " << out_file << '\n';
 	}
 	
-	return 0;// RunBMSimFit(param_file, out_file);
+	return RunBMSimFit(param_file, out_file);
 }

@@ -17,14 +17,55 @@ You should have received a copy of the GNU General Public License along with thi
 
 #pragma once
 
+#include "BMSim_T.h"
 #include "ceres/ceres.h"
+using ceres::CENTRAL;
+using ceres::CostFunction;
+using ceres::DynamicNumericDiffCostFunction;
+using ceres::Problem;
+using ceres::Solve;
+using ceres::Solver;
 
 
-
-class NLSFit
+template <int size> class NLSFit
 {
 public:
 
 	NLSFit(){}
 	~NLSFit(){}
+	bool RunFit(SimulationParameters &sp);
+	std::vector<FitPoint> fitResult;
 };
+
+template <int size> bool NLSFit<size>::RunFit(SimulationParameters &sp)
+{
+	// Build the problem.
+	Problem problem;
+
+	std::vector<double> x;
+	x.push_back(50);
+	x.push_back(2000);
+	// Set up the only cost function (also known as residual). This uses
+	// numeric differentiation to obtain the derivative (jacobian).
+	CostFunctor<size>* cf = new CostFunctor<size>();
+	cf->sp = &sp;
+	DynamicNumericDiffCostFunction<CostFunctor<size>>* cost_function =
+		new DynamicNumericDiffCostFunction<CostFunctor<size>>(cf);
+
+	cost_function->AddParameterBlock(x.size());
+	cost_function->SetNumResiduals(sp.GetFitData()->size());
+
+	problem.AddResidualBlock(cost_function, NULL, x.data());
+
+	// Run the solver!
+	Solver::Options options;
+	options.minimizer_progress_to_stdout = true;
+	//options.check_gradients = true;
+	Solver::Summary summary;
+	ceres::Solve(options, &problem, &summary);
+
+	std::cout << summary.BriefReport() << "\n";
+	fitResult.push_back({ x[0],x[0],x[0] });
+	fitResult.push_back({ x[1],x[1],x[1] });
+	return 0;
+}

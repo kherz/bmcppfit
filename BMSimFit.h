@@ -52,27 +52,40 @@ bool RunBMSimFit(std::string yamlIn, std::string yamlOut)
 	//   This speed advantade vanishes for more pools and can even result in a stack overflow for very large matrices
 	//   In this case more than 3 pools are simulated with dynamic matrices, but this could be expanded eventually
 	//*/
-	//switch (sp.GetNumberOfCESTPools())
-	//{
-	//case 0:
-	//	sp.IsMTActive() ? fit.RunFit(BMSim_T<4>, sp) : fit.RunFit(BMSim_T<3>, sp); // only water
-	//	break;
+	std::vector<FitPoint> fitResult;
+	switch (sp.GetNumberOfCESTPools())
+	{
+	case 0:
+		if (sp.IsMTActive()) {
+			NLSFit<4> fit;
+			fit.RunFit(sp);
+			fitResult = fit.fitResult;
+		}
+		else {
+			NLSFit<5> fit;
+			fit.RunFit(sp);
+			fitResult = fit.fitResult;
+		}
+			
+		break;
 	//case 1:
 	//	sp.IsMTActive() ? fit.RunFit(BMSim_T<7>, sp) : fit.RunFit(BMSim_T<6>, sp); // one cest pool
 	//	break;
 	//case 2:
 	//	sp.IsMTActive() ? fit.RunFit(BMSim_T<10>, sp) : fit.RunFit(BMSim_T<9>,sp); // two cest pools
 	//	break;
-	////case 3:
-	////	sp.IsMTActive() ? Sim_pulseqSBB_T<13>(sp) : Sim_pulseqSBB_T<12>(sp); // three cest pools
-	////	break;
-	//default:
-	//	fit.RunFit(BMSim_T<Dynamic>, sp); // > three pools
+	//case 3:
+	//	sp.IsMTActive() ? Sim_pulseqSBB_T<13>(sp) : Sim_pulseqSBB_T<12>(sp); // three cest pools
 	//	break;
-	//}
+	default:
+		NLSFit<Dynamic> fit;
+		fit.RunFit(sp);
+		fitResult = fit.fitResult;
+		break;
+	}
 
-	//if (!WriteFitResult(yamlOut, fit.GetFitParams()))
-	//	return EXIT_FAILURE;
+	if (!WriteFitResult(yamlOut, &fitResult))
+		return EXIT_FAILURE;
 
 	return EXIT_SUCCESS;
 }

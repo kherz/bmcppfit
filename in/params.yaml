@@ -26,7 +26,7 @@ fit_data: [0.12857191911451737, 0.18374471113172108, 0.21614713962243493, 0.2393
 #offsets_ppm: [-10.0, -8.0, 0.0, 8.0, 10]
 
 # pulseq file with sat pulse
-pulseq_file: "C:\\Users\\kai\\Documents\\MPI\\bmcppfit\\in\\seq.seq"
+pulseq_file: "D:\\scripts\\bm-cpp-fit\\in\\seq.seq"
 
 # openmp
 threads: 4
