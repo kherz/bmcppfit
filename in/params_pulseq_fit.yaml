@@ -1,0 +1,95 @@
+####################################################################################
+# ------ Simulation settings for (py)pulseq-cest BlochMcConnell simulations ------ #
+# ------------------------ https://pulseq-cest.github.io/ ------------------------ #
+####################################################################################
+
+# example file
+
+###### Pool settings 
+#  f: relative pool size fraction (float)
+# r1: inverse longitudinal relaxation time R1 = 1/T1 [Hz] (float)
+# r2: inverse transversal relaxation time R2 = 1/T2 [Hz] (float)
+#  k: exchange rate [Hz] to water pool (MT and CEST pools only) (float)
+# dw: chemical shift (delta omega) relative to water [ppm] (MT and CEST pools only) (float)
+
+# data to fit
+fit_data: [0.11161563527771434, 0.20696354280248797, 0.265096028367067, 0.33669564266833985,
+  0.4205667928876933, 0.5042976376015574, 0.5790873835953779, 0.6419404699185092,
+  0.6932768512701518, 0.7347759147358315, 0.7683152114639077, 0.795544468646281, 0.8177735949394841,
+  0.8350262810859426, 0.8507430866140775, 0.8639252839041912, 0.8744551191774548,
+  0.8831326872569681, 0.8901904984086446, 0.8957329137117437, 0.8995909727750591,
+  0.9061294819733537, 0.912512234073337, 0.9175556992826497, 0.9217054306898341, 0.9252014618680836,
+  0.9281872865166907, 0.9292817731031864, 0.9331002339733937, 0.9352170328846984]
+
+
+fit_params : {
+  "b0shift" : {start: 0.0, upper: 0.2, lower: -0.2} ,
+  "water_t2" : {start: 0.075, upper: 0.1, lower: 0.05},
+  "cest_1_k" : {start: 50, upper: 200, lower: 10},
+  "cest_2_f" : {start: 2.0e-04, upper: 1.8018e-03, lower: 1.8018e-05}
+}
+
+
+# pulseq file with sat pulse
+pulseq_file: "D:\\scripts\\bm-cpp-fit\\in\\seq.seq"
+
+# openmp
+threads: 4
+
+### water pool
+water_pool: {
+  f: 1,
+  t1: 1.3,
+  t2: 0.075
+}
+
+### MT pool
+# lineshape: lineshape of the MT Pool ('Lorentzian', 'SuperLorentzian' or 'None') (str)
+#mt_pool: {
+ # f: 0.05,
+ # t1: 1.3,
+ # t2: 0.00001,
+ # k: 23,
+  #dw: 0,
+ # lineshape: 'SuperLorentzian'
+#}
+
+### CEST pool(s)
+cest_pool: {
+  'Amide': {
+    f: 6.4865e-04,
+    t1: 1.3,
+    t2: 10,
+    k: 30,
+    dw: 3.5
+  },
+  'Creatine': {
+    f: 1.8018e-04,
+    t1: 1.3,
+    t2: 10,
+    k: 1100,
+    dw: 2
+  }
+}
+
+
+###### Scanner settings 
+#       b0: field strength [T] (float)
+#    gamma: gyromagnetic ratio [rad / uT], default is 267.5153 (float)
+# b0_inhom: field inhomogeneity [ppm], default is 0.0 (float)
+#   rel_b1: relative b1 inhomogeneity, default is 1.0 (float)
+b0: 3
+gamma: 267.5153
+b0_inhom: 0.0
+rel_b1: 1
+
+
+##### Additional simulation settings
+#           verbose: verbose output, default is False (bool)
+#    reset_init_mag: True to reset magnetization after each readout, default is True (bool)
+#             scale: relative magnetization after reset of magnetization, default is 1 (float)
+# max_pulse_samples: maximum number of samples for each shaped rf pulse, default is 500 (int)
+verbose: False
+reset_init_mag: True
+scale: 0.5
+max_pulse_samples: 300

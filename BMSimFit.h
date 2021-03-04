@@ -52,19 +52,19 @@ bool RunBMSimFit(std::string yamlIn, std::string yamlOut)
 	//   This speed advantade vanishes for more pools and can even result in a stack overflow for very large matrices
 	//   In this case more than 3 pools are simulated with dynamic matrices, but this could be expanded eventually
 	//*/
-	std::vector<FitPoint> fitResult;
+	//std::vector<FitParameter> fitResult;
 	switch (sp.GetNumberOfCESTPools())
 	{
 	case 0:
 		if (sp.IsMTActive()) {
 			NLSFit<4> fit;
 			fit.RunFit(sp);
-			fitResult = fit.fitResult;
+			//fitResult = fit.fitResult;
 		}
 		else {
 			NLSFit<5> fit;
 			fit.RunFit(sp);
-			fitResult = fit.fitResult;
+			//fitResult = fit.fitResult;
 		}
 			
 		break;
@@ -80,11 +80,11 @@ bool RunBMSimFit(std::string yamlIn, std::string yamlOut)
 	default:
 		NLSFit<Dynamic> fit;
 		fit.RunFit(sp);
-		fitResult = fit.fitResult;
+		//fitResult = fit.fitResult;
 		break;
 	}
 
-	if (!WriteFitResult(yamlOut, &fitResult))
+	if (!WriteFitResult(yamlOut, sp.GetFitParams()))
 		return EXIT_FAILURE;
 
 	return EXIT_SUCCESS;

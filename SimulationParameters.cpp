@@ -46,6 +46,14 @@ const double WaterPool::GetR1() { return R1; }
 /*! \return 1/T2 of pool */
 const double WaterPool::GetR2() { return R2; }
 
+//! Get T1
+/*! \return T1 of pool */
+const double WaterPool::GetT1() { return 1.0 / R1; }
+
+//! Get T2
+/*! \return T2 of pool */
+const double WaterPool::GetT2() { return 1.0 / R2; }
+
 //! Get f
 /*! \return fraction of pool */
 const double WaterPool::GetFraction() { return f; }
@@ -57,6 +65,14 @@ void WaterPool::SetR1(double nR1) { R1 = nR1; }
 //! Set R2
 /*! \param new 1/T2 of pool */
 void WaterPool::SetR2(double nR2) { R2 = nR2; }
+
+//! Set T1
+/*! \param new T1 of pool */
+void WaterPool::SetT1(double nT1) { R1 = 1.0 / nT1; }
+
+//! Set T2
+/*! \param new T2 of pool */
+void WaterPool::SetT2(double nT2) { R2 = 1.0 / nT2; }
 
 //! Set f
 /*! \param new fraction of pool */
@@ -388,6 +404,13 @@ double SimulationParameters::GetScannerB0Inhom()
 	return scanner.B0Inhomogeneity;
 }
 
+//! Get Scanner B0 inhomogeneity
+/*!	\return field inhomogeneity [ppm] of scanner */
+void SimulationParameters::SetScannerB0Inhom(double inho)
+{
+	scanner.B0Inhomogeneity = inho;
+}
+
 //! Get Scanner Gamma
 /*!	\return gyromagnetic ratio of simulated nucleus [rad/uT] */
 double SimulationParameters::GetScannerGamma()
@@ -576,4 +599,107 @@ std::vector<PulseSample>* SimulationParameters::GetUniquePulse(std::pair<int, in
 	std::map<std::pair<int, int>, std::vector<PulseSample>>::iterator it;
 	it = uniquePulses.find(pair);
 	return &(it->second);
+}
+
+
+
+bool SimulationParameters::RegisterFitParameter(std::string name, double start, double upper, double lower)
+{
+	using std::placeholders::_1;
+	if (lower > start || upper < start)
+		return false;
+
+	FitParameter fp;
+	fp.name = name;
+	fp.lower = lower;
+	fp.upper = upper;
+	
+	std::stringstream namestr(name);
+	std::vector<std::string> seglist;
+	std::string segment;
+	bool res = false;
+	while (std::getline(namestr, segment, '_'))
+		seglist.push_back(segment);
+	
+	// we can fit water and cest and b0 shift
+	if (seglist.size() == 1) {
+		if (seglist.at(0).compare("b0shift") == 0) {
+			fp.set = std::bind(&SimulationParameters::SetScannerB0Inhom, this, _1);
+			fp.get = std::bind(&SimulationParameters::GetScannerB0Inhom, this);
+		}
+		else {
+		   return false;
+		}
+	}
+	else if (seglist.size() == 2) {
+		if (seglist.at(0).compare("water") == 0)	{
+			if (seglist.at(1).compare("t1") == 0) {
+				fp.set = std::bind(&WaterPool::SetT1, this->GetWaterPool(), _1);
+				fp.get = std::bind(&WaterPool::GetT1, this->GetWaterPool());
+			}
+			else if (seglist.at(1).compare("t2") == 0) {
+				fp.set = std::bind(&WaterPool::SetT2, this->GetWaterPool(), _1);
+				fp.get = std::bind(&WaterPool::GetT2, this->GetWaterPool());
+			}
+			else {
+				return false;
+			}
+		}
+		else {
+			return false;
+		}
+	}
+	else if (seglist.size() == 3) {
+		if (seglist.at(0).compare("cest") == 0) {
+			int npool = atoi(seglist.at(1).c_str()) - 1;
+			if (npool < 0 || npool + 1 > this->GetNumberOfCESTPools()) {
+				return false;
+			}
+			if (seglist.at(2).compare("t1") == 0) {
+				fp.set = std::bind(&CESTPool::SetT1, this->GetCESTPool(npool), _1);
+				fp.get = std::bind(&CESTPool::GetT1, this->GetCESTPool(npool));
+			}
+			else if (seglist.at(2).compare("t2") == 0) {
+				fp.set = std::bind(&CESTPool::SetT2, this->GetCESTPool(npool), _1);
+				fp.get = std::bind(&CESTPool::GetT2, this->GetCESTPool(npool));
+			}
+			else if (seglist.at(2).compare("k") == 0) {
+				fp.set = std::bind(&CESTPool::SetExchangeRateInHz, this->GetCESTPool(npool), _1);
+				fp.get = std::bind(&CESTPool::GetExchangeRateInHz, this->GetCESTPool(npool));
+			}
+			else if (seglist.at(2).compare("dw") == 0) {
+				fp.set = std::bind(&CESTPool::SetShiftinPPM, this->GetCESTPool(npool), _1);
+				fp.get = std::bind(&CESTPool::GetShiftinPPM, this->GetCESTPool(npool));
+			}
+			else if (seglist.at(2).compare("f") == 0) {
+				fp.set = std::bind(&CESTPool::SetFraction, this->GetCESTPool(npool), _1);
+				fp.get = std::bind(&CESTPool::GetFraction, this->GetCESTPool(npool));
+			}
+			else {
+				return false;
+			}
+		}
+		else {
+			return false;
+		}
+	}
+	else{
+		return false;
+	}
+
+	try
+	{
+		fp.set(start);
+		fitParams.push_back(fp);
+	}
+	catch (...)
+	{
+		return false;
+	}
+	return true;
+}
+
+std::vector<FitParameter>* SimulationParameters::GetFitParams()
+{
+	return &fitParams;
 }

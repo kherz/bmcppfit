@@ -36,8 +36,12 @@ template <int size> struct CostFunctor {
 		//	sp->GetCESTPool(np)->SetExchangeRateInHz(gsl_vector_get(x, np));
 		//	//std::cout << sp->GetCESTPool(np)->GetExchangeRateInHz() << std::endl;  
 		//}
-		sp->GetCESTPool(0)->SetExchangeRateInHz((*x)[0]);
-		sp->GetCESTPool(1)->SetExchangeRateInHz((*x)[1]);
+		for (int p = 0; p < sp->GetFitParams()->size(); p++) {
+			sp->GetFitParams()->at(p).set((*x)[p]);
+		}
+	//	std::cout << "cest_1_k " << sp->GetCESTPool(0)->GetExchangeRateInHz() << std::endl;
+	//	std::cout << "cest_2_f " << sp->GetCESTPool(1)->GetFraction() << std::endl;
+
 		//std::cout << "k1 " << (*x)[0] << ", k2 " << (*x)[1] << std::endl;
 		//sp->GetCESTPool(0) =;
 		//residual[0] = 0;

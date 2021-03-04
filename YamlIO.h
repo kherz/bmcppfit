@@ -109,6 +109,22 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 		return false;
 	}
 
+	// as soon as we know how many pools, we can read the fit params
+	try
+	{
+		auto fit_params = config["fit_params"];
+		for (YAML::const_iterator it = fit_params.begin(); it != fit_params.end(); ++it) {
+			auto name = it->first.as<YAML::Node>();
+			auto params = it->second.as<YAML::Node>();
+			sp.RegisterFitParameter(name.as<std::string>(), params["start"].as<double>(), params["upper"].as<double>(), params["lower"].as<double>());
+		}
+	}
+	catch (...)
+	{
+		std::cout << "Coul not read cest_pool" << std::endl;
+		return false;
+	}
+
 	// get scaling of vector
 	double scale = 1.0;
 	try
@@ -206,7 +222,7 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 
 
 
-bool WriteFitResult(std::string yamlOut, std::vector<FitPoint>* fitResult)
+bool WriteFitResult(std::string yamlOut, std::vector<FitParameter>* fitResult)
 {
 	try
 	{
@@ -214,7 +230,7 @@ bool WriteFitResult(std::string yamlOut, std::vector<FitPoint>* fitResult)
 		std::ofstream fout(yamlOut);
 		for (int i = 0; i < fitResult->size(); i++)
 		{
-			std::string nodestr = "Fit param " + std::to_string(i) + " : " + std::to_string(fitResult->at(i).current);
+			std::string nodestr = fitResult->at(i).name + " : " + std::to_string(fitResult->at(i).get());
 			node = YAML::Load(nodestr);
 			fout << node << std::endl;
 		}
