@@ -29,27 +29,15 @@ template <int size> struct CostFunctor {
 	bool operator()(double const* const* x, double* residual) const
 	{
 
-		// update params
-		//for (int np = 0; np < sp->GetNumberOfCESTPools(); np++)
-		//{
-		//	//gsl_vector_set(x, np, max(min(gsl_vector_get(x, np), fp->at(np).upper), fp->at(np).lower));
-		//	sp->GetCESTPool(np)->SetExchangeRateInHz(gsl_vector_get(x, np));
-		//	//std::cout << sp->GetCESTPool(np)->GetExchangeRateInHz() << std::endl;  
-		//}
+		// update the parameters
 		for (int p = 0; p < sp->GetFitParams()->size(); p++) {
 			sp->GetFitParams()->at(p).set((*x)[p]);
 		}
-	//	std::cout << "cest_1_k " << sp->GetCESTPool(0)->GetExchangeRateInHz() << std::endl;
-	//	std::cout << "cest_2_f " << sp->GetCESTPool(1)->GetFraction() << std::endl;
 
-		//std::cout << "k1 " << (*x)[0] << ", k2 " << (*x)[1] << std::endl;
-		//sp->GetCESTPool(0) =;
-		//residual[0] = 0;
-
-		BlochMcConnellSolver<size> bm_solver = BlochMcConnellSolver<size>(*sp);
-//#pragma omp parallel for
+#pragma omp parallel for
 		for (int i = 0; i < sp->GetADCPositions()->size(); i++)
 		{
+			BlochMcConnellSolver<size> bm_solver = BlochMcConnellSolver<size>(*sp);
 			double accummPhase = 0;
 			Matrix<double, size, 1> M = sp->GetMagnetizationVectors()->col(i);
 			// parfor is poosible here
@@ -88,7 +76,6 @@ template <int size> struct CostFunctor {
 				delete seqBlock;
 			}
 		}
-
 		return true;
 	}
 };

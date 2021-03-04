@@ -27,17 +27,17 @@ using ceres::Solve;
 using ceres::Solver;
 
 
-template <int size> class NLSFit
-{
-public:
+//template <int size> class NLSFit
+//{
+//public:
+//
+//	NLSFit(){}
+//	~NLSFit(){}
+//	bool RunFit(SimulationParameters &sp);
+//	std::vector<FitParameter> fitResult;
+//};
 
-	NLSFit(){}
-	~NLSFit(){}
-	bool RunFit(SimulationParameters &sp);
-	std::vector<FitParameter> fitResult;
-};
-
-template <int size> bool NLSFit<size>::RunFit(SimulationParameters &sp)
+template <int size> bool RunFit(SimulationParameters &sp)
 {
 	// Build the problem.
 	Problem problem;
@@ -58,16 +58,16 @@ template <int size> bool NLSFit<size>::RunFit(SimulationParameters &sp)
 	cost_function->SetNumResiduals(sp.GetFitData()->size());
 
 	problem.AddResidualBlock(cost_function, NULL, x.data());
+	for (int i = 0; i < num_params; i++) {
+		problem.SetParameterLowerBound(x.data(), i, fp->at(i).lower);
+		problem.SetParameterUpperBound(x.data(), i, fp->at(i).upper);
+	}
 
 	// Run the solver!
 	Solver::Options options;
 	options.minimizer_progress_to_stdout = true;
-	//options.check_gradients = true;
 	Solver::Summary summary;
 	ceres::Solve(options, &problem, &summary);
-
 	std::cout << summary.BriefReport() << "\n";
-	//fitResult.push_back({"1", x[0],x[0],x[0] });
-	//fitResult.push_back({ x[1],x[1],x[1] });
 	return 0;
 }
