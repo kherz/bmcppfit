@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License along with thi
 #include "yaml-cpp/yaml.h"
 #include "SimulationParameters.h"
 
-#if _HAS_CXX17
+#if __cplusplus >= 201703L
 #include <filesystem>
 #else
 #include <experimental/filesystem>
@@ -184,7 +184,7 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	{
 		auto seq_fn = config["pulseq_file"];
 		std::string seqfile = seq_fn.as<std::string>();
-#if _HAS_CXX17
+#if __cplusplus >= 201703L
 		std::filesystem::path seqpath(seqfile);
 		std::filesystem::path yamlpath(yamlIn);
 #else

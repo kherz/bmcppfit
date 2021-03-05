@@ -1,15 +1,25 @@
 # Simple CMake file for Sim_pulseqSBB mex-file creation
 # Kai Herz, 2020
 
-cmake_minimum_required(VERSION 3.18.0)
+cmake_minimum_required(VERSION 3.16.0)
 
 project(bmcppfit)
+
 
 
 # O2 is faster than O3, but CMAKE makes O3 standard for GCC
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
    string(REPLACE "-O3 " "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
    set(CMAKE_CXX_FLAGS_RELEASE "-O2 ${CMAKE_CXX_FLAGS_RELEASE}")
+endif()
+
+# we need at least c++ 14 standard for experimental filesystem
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag(-std=c++17 HAVE_FLAG_STD_CXX17)
+if(HAVE_FLAG_STD_CXX17)
+    set (CMAKE_CXX_STANDARD 17)
+else()
+    set (CMAKE_CXX_STANDARD 14)
 endif()
 
 
