@@ -61,9 +61,11 @@ struct PulseSample
 	double timestep;   /*!< pulse sample duration [rad]*/
 };
 
-struct FitPoint
+struct FitParameter
 {
-	double current;
+	std::string name;
+	std::function<void(double)> set;
+	std::function<double()> get;
 	double lower;
 	double upper;
 };
@@ -99,6 +101,12 @@ public:
 	//! Get R2
 	const double GetR2();
 
+	//! Get T1
+	const double GetT1();
+
+	//! Get T2
+	const double GetT2();
+
 	//! Get f
 	const double GetFraction();
 
@@ -107,6 +115,12 @@ public:
 
 	//! Set R2
 	void SetR2(double nR2);
+
+	//! Set T1
+	void SetT1(double nT1);
+
+	//! Set T2
+	void SetT2(double nT2);
 
 	//! Set f
 	void SetFraction(double nf);
@@ -257,6 +271,9 @@ public: // TODO: write get and set methods for member variables and make them pr
 	//! Get Scanner B0 inhomogeneity
 	double GetScannerB0Inhom();
 
+	//! Set Scanner B0 inhomogeneity
+	void SetScannerB0Inhom(double inho);
+
 	//! Get Scanner Gamma
 	double GetScannerGamma();
 
@@ -287,19 +304,28 @@ public: // TODO: write get and set methods for member variables and make them pr
 	//! Get fit data
 	std::vector<double>* GetFitData();
 
+	//! Get weights
+	std::vector<double>* GetFitDataWeights();
+
 	//! Get ADC Positions
 	std::vector<long>* GetADCPositions();
 
-	// get unique pulses
+	//! Get unique pulse
 	std::vector<PulseSample>* GetUniquePulse(std::pair<int, int> pair);
 	
-		// OpenMP Thrads
+	// OpenMP Thrads
 	int numberOfThreads;
 
+	//! Register the fit parameters
+	bool RegisterFitParameter(std::string name, double start, double lower, double upper);
+
+	//! Get the registered fit parameters
+	std::vector<FitParameter>* GetFitParams();
 
 	
 protected:
-
+	
+	void DecodeSeqInfo();  /*!< decosed the info from the pulseq file */
 	ExternalSequence sequence; /*!< pulseq sequence */
 	std::vector<long> adcPos;  /*!< vector with index of ADC events in seq file */
 	std::map<std::pair<int, int>, std::vector<PulseSample>>  uniquePulses; /*!< vector with unique pulse sample */
@@ -322,13 +348,9 @@ protected:
 	unsigned int maxNumberOfPulseSamples;  /*!< number of pulse samples for shaped pulses */
 
 	std::vector<double> fitData; /*!< the Z-spec that shoud be fitted */
+	std::vector<double> weights; /*!< weights for the fit data */
+	std::vector<FitParameter> fitParams; /*!< vector containg parameters to fit */
 
-	void DecodeSeqInfo();
 
 };
 
-
-struct FitFunctionParams {
-	SimulationParameters* sp;
-	std::vector<FitPoint>* fp;
-};

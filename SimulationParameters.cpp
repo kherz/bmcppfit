@@ -46,6 +46,14 @@ const double WaterPool::GetR1() { return R1; }
 /*! \return 1/T2 of pool */
 const double WaterPool::GetR2() { return R2; }
 
+//! Get T1
+/*! \return T1 of pool */
+const double WaterPool::GetT1() { return 1.0 / R1; }
+
+//! Get T2
+/*! \return T2 of pool */
+const double WaterPool::GetT2() { return 1.0 / R2; }
+
 //! Get f
 /*! \return fraction of pool */
 const double WaterPool::GetFraction() { return f; }
@@ -57,6 +65,14 @@ void WaterPool::SetR1(double nR1) { R1 = nR1; }
 //! Set R2
 /*! \param new 1/T2 of pool */
 void WaterPool::SetR2(double nR2) { R2 = nR2; }
+
+//! Set T1
+/*! \param new T1 of pool */
+void WaterPool::SetT1(double nT1) { R1 = 1.0 / nT1; }
+
+//! Set T2
+/*! \param new T2 of pool */
+void WaterPool::SetT2(double nT2) { R2 = 1.0 / nT2; }
 
 //! Set f
 /*! \param new fraction of pool */
@@ -388,6 +404,13 @@ double SimulationParameters::GetScannerB0Inhom()
 	return scanner.B0Inhomogeneity;
 }
 
+//! Get Scanner B0 inhomogeneity
+/*!	\return field inhomogeneity [ppm] of scanner */
+void SimulationParameters::SetScannerB0Inhom(double inho)
+{
+	scanner.B0Inhomogeneity = inho;
+}
+
 //! Get Scanner Gamma
 /*!	\return gyromagnetic ratio of simulated nucleus [rad/uT] */
 double SimulationParameters::GetScannerGamma()
@@ -467,6 +490,13 @@ std::vector<double>* SimulationParameters::GetFitData()
 	return &fitData;
 }
 
+//! Get fit data weights
+/*!	\return pointer to fit data */
+std::vector<double>* SimulationParameters::GetFitDataWeights()
+{
+	return &weights;
+}
+
 //! Get ADC positions
 /*!	\return pointer to vector with indices of adc events */
 std::vector<long>* SimulationParameters::GetADCPositions()
@@ -474,7 +504,7 @@ std::vector<long>* SimulationParameters::GetADCPositions()
 	return &adcPos;
 }
 
-// decode the unique pulses from the seq file
+//! Decode the unique pulses from the seq file
 void SimulationParameters::DecodeSeqInfo()
 {
 	std::vector<std::pair<int, int>> uniquePairs;
@@ -570,10 +600,144 @@ void SimulationParameters::DecodeSeqInfo()
 	}
 }
 
-
+//! Get a unique pulse
+/*!	
+    \param pair a pair containing the magnitude and phase id of the seq file
+    \return pointer to vector containing the pulse samples of a unique pulse
+*/
 std::vector<PulseSample>* SimulationParameters::GetUniquePulse(std::pair<int, int> pair)
 {
 	std::map<std::pair<int, int>, std::vector<PulseSample>>::iterator it;
 	it = uniquePulses.find(pair);
 	return &(it->second);
+}
+
+
+//! Register a fit parameter
+/*!
+    We can fit water and cest and b0 shift so far
+	\param name name of the parameter
+	\param start start value
+	\param upper upper boundary
+	\param lower lower boundary
+	\return true if registration worked
+*/
+bool SimulationParameters::RegisterFitParameter(std::string name, double start, double upper, double lower)
+{
+	using std::placeholders::_1; // need this for std::bind
+	
+	// check if values are valid
+	if (lower > start || upper < start) {
+		std::cout << "Start value of " << name << " is not between boundaries " << std::endl;
+		return false;
+	}
+
+	// init the fit parameter	
+	FitParameter fp;
+	fp.name = name;
+	fp.lower = lower;
+	fp.upper = upper;
+	
+	// divide the name string by underline
+	std::stringstream namestr(name);
+	std::vector<std::string> seglist; // seg list contains the string parts divided by _
+	std::string segment;
+	while (std::getline(namestr, segment, '_')) 
+		seglist.push_back(segment);
+	
+	// we can choose the fit parameters dynamically by binding the corresponding get and set funtions 
+	// in the SimulationParameter object
+	if (seglist.size() == 1) { // single word -> has to be b0 shift
+		if (seglist.at(0).compare("b0shift") == 0) {
+			fp.set = std::bind(&SimulationParameters::SetScannerB0Inhom, this, _1);
+			fp.get = std::bind(&SimulationParameters::GetScannerB0Inhom, this);
+		}
+		else {
+			std::cout << "ERROR: " << name << " is not a valid name for a fit parameter! " << std::endl;
+		    return false;
+		}
+	}
+	else if (seglist.size() == 2) { // two words -> has to be water
+		if (seglist.at(0).compare("water") == 0)	{
+			if (seglist.at(1).compare("t1") == 0) {
+				fp.set = std::bind(&WaterPool::SetT1, this->GetWaterPool(), _1);
+				fp.get = std::bind(&WaterPool::GetT1, this->GetWaterPool());
+			}
+			else if (seglist.at(1).compare("t2") == 0) {
+				fp.set = std::bind(&WaterPool::SetT2, this->GetWaterPool(), _1);
+				fp.get = std::bind(&WaterPool::GetT2, this->GetWaterPool());
+			}
+			else {
+				std::cout << "ERROR: Can only fit T1 and T2 of water, but not " << seglist.at(1) << std::endl;
+				return false;
+			}
+		}
+		else {
+			std::cout << "ERROR: " << name << " is not a valid name for a fit parameter! " << std::endl;
+			return false;
+		}
+	}
+	else if (seglist.size() == 3) { //three words -> has to be cest
+		if (seglist.at(0).compare("cest") == 0) {
+			int npool = atoi(seglist.at(1).c_str()) - 1;
+			if (npool < 0 || npool + 1 > this->GetNumberOfCESTPools()) {
+				std::cout << "ERROR: Can not fit params of cest pool " << npool+1 << "! There are only " << this->GetNumberOfCESTPools() << " pools in the param file!" << std::endl;
+				return false;
+			}
+			if (seglist.at(2).compare("t1") == 0) {
+				fp.set = std::bind(&CESTPool::SetT1, this->GetCESTPool(npool), _1);
+				fp.get = std::bind(&CESTPool::GetT1, this->GetCESTPool(npool));
+			}
+			else if (seglist.at(2).compare("t2") == 0) {
+				fp.set = std::bind(&CESTPool::SetT2, this->GetCESTPool(npool), _1);
+				fp.get = std::bind(&CESTPool::GetT2, this->GetCESTPool(npool));
+			}
+			else if (seglist.at(2).compare("k") == 0) {
+				fp.set = std::bind(&CESTPool::SetExchangeRateInHz, this->GetCESTPool(npool), _1);
+				fp.get = std::bind(&CESTPool::GetExchangeRateInHz, this->GetCESTPool(npool));
+			}
+			else if (seglist.at(2).compare("dw") == 0) {
+				fp.set = std::bind(&CESTPool::SetShiftinPPM, this->GetCESTPool(npool), _1);
+				fp.get = std::bind(&CESTPool::GetShiftinPPM, this->GetCESTPool(npool));
+			}
+			else if (seglist.at(2).compare("f") == 0) {
+				fp.set = std::bind(&CESTPool::SetFraction, this->GetCESTPool(npool), _1);
+				fp.get = std::bind(&CESTPool::GetFraction, this->GetCESTPool(npool));
+			}
+			else {
+				std::cout << "ERROR: Can only fit T1, T2, k, f and dw of cest pool, but not " << seglist.at(2) << std::endl;
+				return false;
+			}
+		}
+		else {
+			std::cout << "ERROR: " << name << " is not a valid name for a fit parameter! " << std::endl;
+			return false;
+		}
+	}
+	else{
+		std::cout << "ERROR: " << name << " is not a valid name for a fit parameter! " << std::endl;
+		return false;
+	}
+
+	// try to access the parameter via the set function
+	try
+	{
+		fp.set(start);
+		fitParams.push_back(fp); // register param
+	}
+	catch (...)
+	{
+		std::cout << "Unspecified ERROR: Could not register " << name << std::endl;
+		return false;
+	}
+	return true;
+}
+
+//! Get fit parameters
+/*!
+	\return a pointer to avector for the fit parameters, or NULL if none were registered
+*/
+std::vector<FitParameter>* SimulationParameters::GetFitParams()
+{
+	return fitParams.size() == 0 ? NULL : &fitParams;
 }

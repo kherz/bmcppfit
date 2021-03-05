@@ -19,11 +19,33 @@ You should have received a copy of the GNU General Public License along with thi
 #include "yaml-cpp/yaml.h"
 #include "SimulationParameters.h"
 
+#if __cplusplus >= 201703L
+#include <filesystem>
+#else
+#include <experimental/filesystem>
+#endif
 
+//! Read the parameter yaml file
+/*!
+   \param yamlIn file name of the yaml file
+   \param sp SimulationParameters object by reference that gets filled
+   \return true if success
+*/
 bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 {
-	YAML::Node config = YAML::LoadFile(yamlIn);
-	// get data to fir
+	YAML::Node config;
+	// try to read the file
+	try
+	{
+		config = YAML::LoadFile(yamlIn);
+	}
+	catch (...)
+	{
+		std::cout << "Could not read load yaml file" << std::endl;
+		return false;
+	}
+	
+	// get data to fit
 	try
 	{
 		auto fit_data = config["fit_data"];
@@ -34,7 +56,31 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	}
 	catch (...)
 	{
-		std::cout << "Could not readfit data" << std::endl;
+		std::cout << "Could not read fit data" << std::endl;
+		return false;
+	}
+	// init weights
+	sp.GetFitDataWeights()->resize(sp.GetFitData()->size());
+	std::fill(sp.GetFitDataWeights()->begin(), sp.GetFitDataWeights()->end(), 1.0);
+	try
+	{
+		auto weights = config["weights"];
+		if (weights.IsDefined()) {
+			auto n = weights.size();
+			if (n == sp.GetFitDataWeights()->size()) { // fill the vector with the weights
+				for (int sample = 0; sample < n; sample++)
+					sp.GetFitDataWeights()->at(sample) = (weights[sample].as<double>());
+			}
+			else {
+				std::cout << "Size of weights (" << n << ") does not match with size of fit data ( " << sp.GetFitDataWeights()->size()  << ")" << std::endl;
+				std::cout << "Ignoring weights!" << std::endl;
+			}
+
+		}
+	}
+	catch (...)
+	{
+		std::cout << "Could not read weights" << std::endl;
 		return false;
 	}
 
@@ -81,7 +127,7 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	}
 	catch (...)
 	{
-		std::cout << "Coul not read mt_pool" << std::endl;
+		std::cout << "Could not read mt_pool" << std::endl;
 		return false;
 	}
 
@@ -105,7 +151,24 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	}
 	catch (...)
 	{
-		std::cout << "Coul not read cest_pool" << std::endl;
+		std::cout << "Could not read cest_pool" << std::endl;
+		return false;
+	}
+
+	// as soon as we know how many pools, we can read the fit params
+	try
+	{
+		auto fit_params = config["fit_params"];
+		for (YAML::const_iterator it = fit_params.begin(); it != fit_params.end(); ++it) {
+			auto name = it->first.as<YAML::Node>();
+			auto params = it->second.as<YAML::Node>();
+			if (!sp.RegisterFitParameter(name.as<std::string>(), params["start"].as<double>(), params["upper"].as<double>(), params["lower"].as<double>()))
+				return false;
+		}
+	}
+	catch (...)
+	{
+		std::cout << "Could not read fit parameters" << std::endl;
 		return false;
 	}
 
@@ -120,7 +183,7 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	}
 	catch (...)
 	{
-		std::cout << "Could not read pulseq file" << std::endl;
+		std::cout << "Could not read scale" << std::endl;
 		return false;
 	}
 
@@ -128,6 +191,7 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	int ncp = sp.GetNumberOfCESTPools();
 	int vecSize = (3 * (ncp + 1)) + (sp.IsMTActive() ? 1 : 0);
 	Eigen::VectorXd M(vecSize);
+	M.fill(0.0);
 	M(2 * (ncp + 1)) = sp.GetWaterPool()->GetFraction();
 	for (int i = 0; i < ncp; i++) {
 		M(2 * (ncp + 1) + i + 1) = sp.GetCESTPool(i)->GetFraction();
@@ -140,10 +204,32 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	sp.InitMagnetizationVectors(M, sp.GetFitData()->size());
 
 	// read pulseq sequence
+	// if no path is specified for the pulseq file it is assumed to be in the same folder as the yaml file
 	try
 	{
 		auto seq_fn = config["pulseq_file"];
-		sp.SetExternalSequence(seq_fn.as<std::string>());
+		std::string seqfile = seq_fn.as<std::string>();
+#if __cplusplus >= 201703L
+		std::filesystem::path seqpath(seqfile);
+		std::filesystem::path yamlpath(yamlIn);
+#else
+		std::experimental::filesystem::path seqpath(seqfile);
+		std::experimental::filesystem::path yamlpath(yamlIn);
+#endif
+		std::string fullseq;
+		if (seqpath.parent_path().empty()) { // get path from yaml file
+			fullseq = std::string(yamlpath.parent_path().u8string());
+#ifdef WIN32
+			fullseq += "\\";
+#else
+			fullseq += "/";
+#endif
+			fullseq += seqfile;
+		}
+		else {
+			fullseq = seqfile;
+		}
+		sp.SetExternalSequence(fullseq);
 	}
 	catch (...)
 	{
@@ -205,8 +291,13 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 }
 
 
-
-bool WriteFitResult(std::string yamlOut, std::vector<FitPoint>* fitResult)
+//! Write the results yaml file
+/*!
+   \param yamlOut file name of the yaml file
+   \param fitResult results of the fit
+   \return true if success
+*/
+bool WriteFitResult(std::string yamlOut, std::vector<FitParameter>* fitResult)
 {
 	try
 	{
@@ -214,7 +305,7 @@ bool WriteFitResult(std::string yamlOut, std::vector<FitPoint>* fitResult)
 		std::ofstream fout(yamlOut);
 		for (int i = 0; i < fitResult->size(); i++)
 		{
-			std::string nodestr = "Fit param " + std::to_string(i) + " : " + std::to_string(fitResult->at(i).current);
+			std::string nodestr = fitResult->at(i).name + " : " + std::to_string(fitResult->at(i).get());
 			node = YAML::Load(nodestr);
 			fout << node << std::endl;
 		}
