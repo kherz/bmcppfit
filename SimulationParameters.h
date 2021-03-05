@@ -304,6 +304,9 @@ public: // TODO: write get and set methods for member variables and make them pr
 	//! Get fit data
 	std::vector<double>* GetFitData();
 
+	//! Get weights
+	std::vector<double>* GetFitDataWeights();
+
 	//! Get ADC Positions
 	std::vector<long>* GetADCPositions();
 
@@ -345,6 +348,7 @@ protected:
 	unsigned int maxNumberOfPulseSamples;  /*!< number of pulse samples for shaped pulses */
 
 	std::vector<double> fitData; /*!< the Z-spec that shoud be fitted */
+	std::vector<double> weights; /*!< weights for the fit data */
 	std::vector<FitParameter> fitParams; /*!< vector containg parameters to fit */
 
 

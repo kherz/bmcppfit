@@ -50,8 +50,8 @@ template <int size> struct CostFunctor {
 			{
 				SeqBlock* seqBlock = sp->GetExternalSequence()->GetBlock(j);
 				if (seqBlock->isADC()) { // we calculate the residuals at the ADC event
-					double Zdiff = M(2 * (sp->GetNumberOfCESTPools() + 1)) - sp->GetFitData()->at(i);
-					residual[i] = Zdiff;
+					double Zdiff = sp->GetFitData()->at(i) - M(2 * (sp->GetNumberOfCESTPools() + 1));
+					residual[i] = Zdiff * sp->GetFitDataWeights()->at(i);
 				}
 				else if (seqBlock->isTrapGradient(0) && seqBlock->isTrapGradient(1) && seqBlock->isTrapGradient(2)) { // spoil for all 3 gradients
 					for (int i = 0; i < (sp->GetNumberOfCESTPools() + 1) * 2; i++)
@@ -62,7 +62,7 @@ template <int size> struct CostFunctor {
 					std::vector<PulseSample>* pulseSamples = sp->GetUniquePulse(p); // find the unque rf id in the previously decoded seq file library
 					double rfFrequency = seqBlock->GetRFEvent().freqOffset;
 					for (int p = 0; p < pulseSamples->size(); p++) { // loop through pulse samples
-						bm_solver.UpdateBlochMatrix(*sp, pulseSamples->at(p).magnitude, rfFrequency, pulseSamples->at(p).phase - accummPhase);
+						bm_solver.UpdateBlochMatrix(*sp, pulseSamples->at(p).magnitude, rfFrequency, pulseSamples->at(p).phase + seqBlock->GetRFEvent().phaseOffset - accummPhase);
 						bm_solver.SolveBlochEquation(M, pulseSamples->at(p).timestep);
 					}
 					int phaseDegree = seqBlock->GetDuration() * 1e-6 * 360 * rfFrequency;

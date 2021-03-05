@@ -59,6 +59,30 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 		std::cout << "Could not read fit data" << std::endl;
 		return false;
 	}
+	// init weights
+	sp.GetFitDataWeights()->resize(sp.GetFitData()->size());
+	std::fill(sp.GetFitDataWeights()->begin(), sp.GetFitDataWeights()->end(), 1.0);
+	try
+	{
+		auto weights = config["weights"];
+		if (weights.IsDefined()) {
+			auto n = weights.size();
+			if (n == sp.GetFitDataWeights()->size()) { // fill the vector with the weights
+				for (int sample = 0; sample < n; sample++)
+					sp.GetFitDataWeights()->at(sample) = (weights[sample].as<double>());
+			}
+			else {
+				std::cout << "Size of weights (" << n << ") does not match with size of fit data ( " << sp.GetFitDataWeights()->size()  << ")" << std::endl;
+				std::cout << "Ignoring weights!" << std::endl;
+			}
+
+		}
+	}
+	catch (...)
+	{
+		std::cout << "Could not read weights" << std::endl;
+		return false;
+	}
 
 	// water pool
 	try
@@ -167,6 +191,7 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	int ncp = sp.GetNumberOfCESTPools();
 	int vecSize = (3 * (ncp + 1)) + (sp.IsMTActive() ? 1 : 0);
 	Eigen::VectorXd M(vecSize);
+	M.fill(0.0);
 	M(2 * (ncp + 1)) = sp.GetWaterPool()->GetFraction();
 	for (int i = 0; i < ncp; i++) {
 		M(2 * (ncp + 1) + i + 1) = sp.GetCESTPool(i)->GetFraction();

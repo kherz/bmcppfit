@@ -490,6 +490,13 @@ std::vector<double>* SimulationParameters::GetFitData()
 	return &fitData;
 }
 
+//! Get fit data weights
+/*!	\return pointer to fit data */
+std::vector<double>* SimulationParameters::GetFitDataWeights()
+{
+	return &weights;
+}
+
 //! Get ADC positions
 /*!	\return pointer to vector with indices of adc events */
 std::vector<long>* SimulationParameters::GetADCPositions()
