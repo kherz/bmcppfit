@@ -307,14 +307,16 @@ public: // TODO: write get and set methods for member variables and make them pr
 	//! Get ADC Positions
 	std::vector<long>* GetADCPositions();
 
-	// get unique pulses
+	//! Get unique pulse
 	std::vector<PulseSample>* GetUniquePulse(std::pair<int, int> pair);
 	
 	// OpenMP Thrads
 	int numberOfThreads;
 
+	//! Register the fit parameters
 	bool RegisterFitParameter(std::string name, double start, double lower, double upper);
 
+	//! Get the registered fit parameters
 	std::vector<FitParameter>* GetFitParams();
 
 	

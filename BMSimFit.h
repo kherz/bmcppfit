@@ -45,23 +45,20 @@ bool RunBMSimFit(std::string yamlIn, std::string yamlOut)
 	switch (sp.GetNumberOfCESTPools())
 	{
 	case 0:
-	    sp.IsMTActive() ? RunFit<4>(sp) : RunFit<3>(sp); // one cest pool
+	    sp.IsMTActive() ? RunFit<4>(sp) : RunFit<3>(sp); // no cest pool
 		break;
 	case 1:
 		sp.IsMTActive() ? RunFit<7>(sp) : RunFit<6>(sp); // one cest pool
 		break;
 	case 2:
-		sp.IsMTActive() ? RunFit<10>(sp) : RunFit<9>(sp);
-		//sp.IsMTActive() ? fit.RunFit(BMSim_T<10>, sp) : fit.RunFit(BMSim_T<9>,sp); // two cest pools
+		sp.IsMTActive() ? RunFit<10>(sp) : RunFit<9>(sp); // two cest pools
 		break;
-	//case 3:
-	//	sp.IsMTActive() ? Sim_pulseqSBB_T<13>(sp) : Sim_pulseqSBB_T<12>(sp); // three cest pools
-	//	break;
 	default:
 		RunFit<Dynamic>(sp);
 		break;
 	}
 
+	// write the result
 	if (!WriteFitResult(yamlOut, sp.GetFitParams()))
 		return EXIT_FAILURE;
 

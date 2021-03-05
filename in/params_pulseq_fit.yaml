@@ -23,7 +23,7 @@ fit_data: [0.11161563527771434, 0.20696354280248797, 0.265096028367067, 0.336695
 
 
 fit_params : {
-  "b0shift" : {start: 0.0, upper: 0.2, lower: -0.2} ,
+  "b0shift" : {start: 0.0, upper: 0.2, lower: -0.2},
   "water_t1" : {start: 1.1, upper: 1.8, lower: 0.6},
   "water_t2" : {start: 0.075, upper: 0.1, lower: 0.05},
   "cest_1_k" : {start: 50, upper: 200, lower: 10},
@@ -32,14 +32,14 @@ fit_params : {
 
 
 # pulseq file with sat pulse
-pulseq_file: "D:\\scripts\\bm-cpp-fit\\in\\seq.seq"
+pulseq_file: "seq.seq"
 
 # openmp
 threads: 8
 
 ### water pool
 water_pool: {
-  f: 1,
+  f: 1.0,
   t1: 1.3,
   t2: 0.075
 }
