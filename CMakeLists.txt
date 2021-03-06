@@ -68,5 +68,13 @@ if(OpenMP_CXX_FOUND)
     target_link_libraries(bmcppfit PRIVATE OpenMP::OpenMP_CXX)
 endif()
 
+install(TARGETS bmcppfit)
 
-
+IF (WIN32)
+install(CODE [[
+file(COPY ${CMAKE_CURRENT_BINARY_DIR}/Release/yaml-cpp.dll DESTINATION ${CMAKE_INSTALL_PREFIX}/bin) 
+file(COPY ${CMAKE_CURRENT_BINARY_DIR}/Release/ceres.dll DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+file(COPY ${CMAKE_CURRENT_BINARY_DIR}/Release/gflags.dll DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+file(COPY ${CMAKE_CURRENT_BINARY_DIR}/Release/glog.dll DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+]])
+ENDIF()

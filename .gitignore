@@ -1,3 +1,5 @@
 linux_build/
 build_ceres/
 old/
+install/
+bin/
