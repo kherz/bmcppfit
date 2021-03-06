@@ -1,5 +1,6 @@
 linux_build/
 build_ceres/
+build_ceres_64/
 old/
 install/
 bin/

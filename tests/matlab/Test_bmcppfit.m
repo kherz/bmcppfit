@@ -76,8 +76,8 @@ yaml.WriteYaml(yaml_fit_fn, y_fit)
 yaml_res = fullfile(results_path,'fit_results.yaml');
 
 %%
-bin_path = fullfile(script_fp, '..', '..', 'bin', 'bmcppfit');
-[~] = system([bin_path ' -p=' yaml_fit_fn ' -o=' yaml_res]);
+%bin_path = fullfile(script_fp, '..', '..', 'bin', 'bmcppfit');
+[~] = system(['bmcppfit -p=' yaml_fit_fn ' -o=' yaml_res]);
 
 %% get results 
 y_res = yaml.ReadYaml(yaml_res);
