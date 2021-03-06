@@ -70,7 +70,7 @@ plot(offsets,M_z);
 
 %% make yaml file for sim
 yaml_fit_fn = fullfile(results_path,'yaml_fit.yaml');
-yaml.WriteYaml(yaml_fit_fn, y_fit)
+yaml.WriteYaml(yaml_fit_fn, y_fit);
 
 %% results file
 yaml_res = fullfile(results_path,'fit_results.yaml');
@@ -92,8 +92,7 @@ new_yaml_fn = fullfile(results_path,'GM_3T_001_bmcppfit_fitted.yaml');
 yaml.WriteYaml(new_yaml_fn,y_init);
 M_z = Run_pulseq_cest_Simulation(seq_fn, new_yaml_fn);
 plot(offsets,M_z);
-
-
-
+%%
+legend('Original Z-spectrum','Z-spectrum with Initial Parameters', 'Z-spectrum with Fitted Parameters');
 
 
