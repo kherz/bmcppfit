@@ -1,8 +1,8 @@
-//!  MatlabIO.h
+//!  YamlIO.h
 /*!
-Read/return variables to MATLAB
+Read/write to yaml files
 
-Kai Herz, 2018
+Kai Herz, 2021
 kai.herz@tuebingen.mpg.de
 
 **********************************
@@ -41,7 +41,7 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	}
 	catch (...)
 	{
-		std::cout << "Could not read load yaml file" << std::endl;
+		std::cout << "Could not load yaml file " << yamlIn << std::endl;
 		return false;
 	}
 	
@@ -273,6 +273,9 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	try {
 		auto threads = config["threads"];
 		int inputThreads = threads.as<int>();
+		if (maxThreads < inputThreads) {
+			std::cout << "WARNING: Specified openMP threads " << inputThreads << " are higher than maximum allowed " << maxThreads << "! Using maximum threads instead" << std::endl;
+		}
 		sp.numberOfThreads = inputThreads <= maxThreads ? inputThreads : maxThreads;
 	}
 	catch (...) {

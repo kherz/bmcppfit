@@ -1,6 +1,6 @@
-//!  BMSim.cpp
+//!  main.cpp
 /*!
-Bloch-McConnell Z-Spectrum simulation
+Sequential procedure of doing the fit
 
 Kai Herz, 2018
 kai.herz@tuebingen.mpg.de

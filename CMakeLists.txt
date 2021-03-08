@@ -1,10 +1,9 @@
-# Simple CMake file for Sim_pulseqSBB mex-file creation
-# Kai Herz, 2020
+# Simple CMake file for bmcppfit executable 
+# Kai Herz, 2021
 
 cmake_minimum_required(VERSION 3.16.0)
 
 project(bmcppfit)
-
 
 
 # O2 is faster than O3, but CMAKE makes O3 standard for GCC
@@ -70,6 +69,7 @@ endif()
 
 install(TARGETS bmcppfit)
 
+# todo: we assume dynamic linking on windows here, that should be checked
 IF (WIN32)
 install(CODE [[
 file(COPY ${CMAKE_CURRENT_BINARY_DIR}/Release/yaml-cpp.dll DESTINATION ${CMAKE_INSTALL_PREFIX}/bin) 

@@ -2,7 +2,7 @@
 /*!
 Implementation of the Z-Spectrum Bloch-McConnell simulation for N pools as a CostFunctor for the seres solver
 
-Kai Herz, 2019
+Kai Herz, 2021
 kai.herz@tuebingen.mpg.de
 
 **********************************
