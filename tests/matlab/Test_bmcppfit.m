@@ -84,6 +84,7 @@ y_res = yaml.ReadYaml(yaml_res);
 disp(['Simulated water t2 was ' num2str(y_fit.water_pool.t2) ', fitted k is ' num2str(y_res.water_t2)]);
 disp(['Simulated amide k was ' num2str(y_fit.cest_pool.amide.k) ', fitted k is ' num2str(y_res.cest_1_k)]);
 disp(['Simulated NOE f was ' num2str(y_fit.cest_pool.NOE_1.f) ', fitted f is ' num2str(y_res.cest_2_f)]);
+y_init.water_pool.t2 = y_res.water_t2;
 y_init.cest_pool.amide.k = y_res.cest_1_k;
 y_init.cest_pool.NOE_1.f = y_res.cest_2_f;
 

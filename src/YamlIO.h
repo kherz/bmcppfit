@@ -173,12 +173,11 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	}
 
 	// get scaling of vector
-	double scale = 1.0;
 	try
 	{
 		auto scaleNode = config["scale"];
 		if (scaleNode.IsDefined()) {
-			scale = scaleNode.as<double>();
+			sp.SetMagnetizationVectroScale(scaleNode.as<double>());
 		}
 	}
 	catch (...)
@@ -198,8 +197,6 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	}
 	if (sp.IsMTActive())
 		M(vecSize - 1) = sp.GetMTPool()->GetFraction();
-	// scale
-	M *= scale;
 	// init with same number as fit data
 	sp.InitMagnetizationVectors(M, sp.GetFitData()->size());
 
@@ -242,6 +239,10 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	{
 		auto b0 = config["b0"];
 		sp.InitScanner(b0.as<double>());
+		auto b1 = config["rel_b1"];
+		if (b1.IsDefined()) {
+			sp.SetScannerRelB1(b1.as<double>());
+		}
 	}
 	catch (...)
 	{
@@ -260,7 +261,7 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	}
 	catch (...)
 	{
-		std::cout << "Could not read pulseq file" << std::endl;
+		std::cout << "Could not read max pulse samples file" << std::endl;
 		return false;
 	}
 	sp.SetMaxNumberOfPulseSamples(maxSamples);

@@ -263,6 +263,7 @@ SimulationParameters::SimulationParameters()
 	verboseMode = false;
 	useInitMagnetization = true;
 	maxNumberOfPulseSamples = 100;
+	scale = 1.0;
 	InitScanner(0.0);
 }
 
@@ -397,6 +398,13 @@ double SimulationParameters::GetScannerRelB1()
 	return scanner.relB1;
 }
 
+//! Set Scanner relative B1
+/*!	\param relative b1 of scanner */
+void SimulationParameters::SetScannerRelB1(double b1)
+{
+	scanner.relB1 = b1;
+}
+
 //! Get Scanner B0 inhomogeneity
 /*!	\return field inhomogeneity [ppm] of scanner */
 double SimulationParameters::GetScannerB0Inhom()
@@ -502,6 +510,20 @@ std::vector<double>* SimulationParameters::GetFitDataWeights()
 std::vector<long>* SimulationParameters::GetADCPositions()
 {
 	return &adcPos;
+}
+
+
+//! Get the scaling of the initial M
+/*!	\return scale of magnetization vector */
+double SimulationParameters::GetMagnetizationVectroScale()
+{
+	return scale;
+}
+
+//! Set the scaling of the initial M
+void SimulationParameters::SetMagnetizationVectroScale(double s)
+{
+	scale = s;
 }
 
 //! Decode the unique pulses from the seq file
@@ -647,10 +669,14 @@ bool SimulationParameters::RegisterFitParameter(std::string name, double start, 
 	
 	// we can choose the fit parameters dynamically by binding the corresponding get and set funtions 
 	// in the SimulationParameter object
-	if (seglist.size() == 1) { // single word -> has to be b0 shift
+	if (seglist.size() == 1) { // single word ->  b0 shift
 		if (seglist.at(0).compare("b0shift") == 0) {
 			fp.set = std::bind(&SimulationParameters::SetScannerB0Inhom, this, _1);
 			fp.get = std::bind(&SimulationParameters::GetScannerB0Inhom, this);
+		}
+		else if(seglist.at(0).compare("scale") == 0) {
+			fp.set = std::bind(&SimulationParameters::SetMagnetizationVectroScale, this, _1);
+			fp.get = std::bind(&SimulationParameters::GetMagnetizationVectroScale, this);
 		}
 		else {
 			std::cout << "ERROR: " << name << " is not a valid name for a fit parameter! " << std::endl;

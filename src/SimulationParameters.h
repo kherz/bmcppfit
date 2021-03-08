@@ -268,6 +268,9 @@ public: // TODO: write get and set methods for member variables and make them pr
 	//! Get Scanner relative B1
 	double GetScannerRelB1();
 
+	//! Set Scanner relative B1
+	void SetScannerRelB1(double b1);
+
 	//! Get Scanner B0 inhomogeneity
 	double GetScannerB0Inhom();
 
@@ -322,6 +325,12 @@ public: // TODO: write get and set methods for member variables and make them pr
 	//! Get the registered fit parameters
 	std::vector<FitParameter>* GetFitParams();
 
+	//! Get the scaling of the initial M
+	double GetMagnetizationVectroScale();
+
+	//! Set the scaling of the initial M
+	void SetMagnetizationVectroScale(double s);
+
 	
 protected:
 	
@@ -346,6 +355,7 @@ protected:
 	bool verboseMode;                      /*!< true, if you want to have some output information */
 	bool useInitMagnetization;             /*!< true, if the magnetization vector should be reset to the initial magnetization after each adc */
 	unsigned int maxNumberOfPulseSamples;  /*!< number of pulse samples for shaped pulses */
+	double scale;                          /*!< scaling of initial magnetization */
 
 	std::vector<double> fitData; /*!< the Z-spec that shoud be fitted */
 	std::vector<double> weights; /*!< weights for the fit data */

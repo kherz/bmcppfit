@@ -49,6 +49,7 @@ template <int size> struct CostFunctor {
 				BlochMcConnellSolver<size> bm_solver = BlochMcConnellSolver<size>(*sp);
 				double accummPhase = 0;
 				Matrix<double, size, 1> M = sp->GetMagnetizationVectors()->col(i); // magnetization vector
+				M *= sp->GetMagnetizationVectroScale(); // use init scale 
 				int startIdx = i == 0 ? 0 : sp->GetADCPositions()->at(i - 1) + 1; // find the idx in the pulseq file from which the current offset starts
 				for (int j = startIdx; j <= sp->GetADCPositions()->at(i); j++)
 				{

@@ -1,8 +1,8 @@
-//!  main.cpp
+//!  BMSimFit.h
 /*!
 Sequential procedure of doing the fit
 
-Kai Herz, 2018
+Kai Herz, 2021
 kai.herz@tuebingen.mpg.de
 
 **********************************
