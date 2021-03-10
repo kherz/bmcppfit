@@ -15,6 +15,7 @@ int main(int argc, char** argv)
 		cout << "Please provide the following parameters with -<flag>=<param>" << endl;
 		cout << "-p: .yaml-file with all specifications. See example file for help" << endl;
 		cout << "-o: output .yaml file with fitted parameters (optional)" << endl;
+		cout << "-f: .yaml-file with parameters for the fit algorithm (optional) " << endl;
 		return EXIT_SUCCESS;
 	}
 
@@ -39,6 +40,16 @@ int main(int argc, char** argv)
 		out_file = cmdl("-o").str();
 		cout << "Writing output to " << out_file << '\n';
 	}
+
+	// fit options
+	string fit_options_file = "";
+	if (!cmdl("-f")) {
+		cout << "Fit options file not provided, using standard parameters" << endl;
+	}
+	else {
+		fit_options_file = cmdl("-f").str();
+		cout << "Using fit options file " << param_file << '\n';
+	}
 	
-	return RunBMSimFit(param_file, out_file);
+	return RunBMSimFit(param_file, out_file, fit_options_file);
 }

@@ -28,7 +28,7 @@ You should have received a copy of the GNU General Public License along with thi
     \param nlhs yamlIn Input parameter file 
 	\param nlhs yamlOut Output parameter file
 */
-bool RunBMSimFit(std::string yamlIn, std::string yamlOut)
+bool RunBMSimFit(std::string yamlIn, std::string yamlOut, std::string yamlFitOptions)
 {
 	//init the simulation interface and read the input
 	SimulationParameters sp;
@@ -41,20 +41,27 @@ bool RunBMSimFit(std::string yamlIn, std::string yamlOut)
 		std::cout << "Error: pulseq file and fit data have different number of data points!" << std::endl;
 		return EXIT_FAILURE;
 	}
-		
+
+	// init solver options
+	ceres::Solver::Options opts;
+	SetStandardOprionsParameters(opts);
+	if (!yamlFitOptions.empty())
+		if(!ParseYamlCeresOptions(yamlFitOptions, opts))
+			return EXIT_FAILURE;
+
 	switch (sp.GetNumberOfCESTPools())
 	{
 	case 0:
-	    sp.IsMTActive() ? RunFit<4>(sp) : RunFit<3>(sp); // no cest pool
+	    sp.IsMTActive() ? RunFit<4>(sp, opts) : RunFit<3>(sp, opts); // no cest pool
 		break;
 	case 1:
-		sp.IsMTActive() ? RunFit<7>(sp) : RunFit<6>(sp); // one cest pool
+		sp.IsMTActive() ? RunFit<7>(sp, opts) : RunFit<6>(sp, opts); // one cest pool
 		break;
 	case 2:
-		sp.IsMTActive() ? RunFit<10>(sp) : RunFit<9>(sp); // two cest pools
+		sp.IsMTActive() ? RunFit<10>(sp, opts) : RunFit<9>(sp, opts); // two cest pools
 		break;
 	default:
-		RunFit<Dynamic>(sp);
+		RunFit<Dynamic>(sp, opts);
 		break;
 	}
 

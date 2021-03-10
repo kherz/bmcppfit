@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License along with thi
 
 #include "yaml-cpp/yaml.h"
 #include "SimulationParameters.h"
+#include "ceres/ceres.h"
 
 #if __cplusplus >= 201703L
 #include <filesystem>
@@ -318,6 +319,81 @@ bool WriteFitResult(std::string yamlOut, std::vector<FitParameter>* fitResult)
 	catch (...)
 	{
 		std::cout << "Could not write results file" << std::endl;
+		return false;
+	}
+	return true;
+}
+
+//! Read options yaml file
+/*!
+   \param yamlOptionsFile file name of the yaml fit options file
+   \param opts ceres::Solver::Options by reference
+   \return true if success
+*/
+bool ParseYamlCeresOptions(std::string yamlOptionsFile, ceres::Solver::Options & opts)
+{
+	YAML::Node config;
+	// try to read the file
+	try
+	{
+		config = YAML::LoadFile(yamlOptionsFile);
+	}
+	catch (...)
+	{
+		std::cout << "Could not load yaml file " << yamlOptionsFile << std::endl;
+		return false;
+	}
+
+	try
+	{
+		auto fit_options = config["fit_options"];
+		for (YAML::const_iterator it = fit_options.begin(); it != fit_options.end(); ++it) {
+			std::string name = it->first.as<YAML::Node>().as<std::string>();
+			// trust region type
+			if (name.compare("trust_region_strategy_type") == 0)	{
+				std::string type = it->second.as<YAML::Node>().as<std::string>();
+				if (type.compare("LEVENBERG_MARQUARDT") == 0) {
+					opts.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
+				}
+				else if (type.compare("DOGLEG") == 0) {
+					opts.trust_region_strategy_type = ceres::DOGLEG;
+				}
+				else {
+					std::cout << type << " is not a valid trust_region_strategy_type, Using LEVENBERG_MARQUARDT" << std::endl;
+				}
+			}
+			else if(name.compare("max_num_iterations") == 0){
+				opts.max_num_iterations = it->second.as<YAML::Node>().as<int>();
+			}
+			else if (name.compare("max_solver_time_in_seconds") == 0) {
+				opts.max_solver_time_in_seconds = it->second.as<YAML::Node>().as<double>();
+			}
+			else if (name.compare("initial_trust_region_radius") == 0) {
+				opts.initial_trust_region_radius = it->second.as<YAML::Node>().as<double>();
+			}
+			else if (name.compare("max_trust_region_radius") == 0) {
+				opts.max_trust_region_radius = it->second.as<YAML::Node>().as<double>();
+			}
+			else if (name.compare("min_trust_region_radius") == 0) {
+				opts.min_trust_region_radius = it->second.as<YAML::Node>().as<double>();
+			}
+			else if (name.compare("function_tolerance") == 0) {
+				opts.function_tolerance = it->second.as<YAML::Node>().as<double>();
+			}
+			else if (name.compare("gradient_tolerance") == 0) {
+				opts.gradient_tolerance = it->second.as<YAML::Node>().as<double>();
+			}
+			else if (name.compare("parameter_tolerance") == 0) {
+				opts.parameter_tolerance = it->second.as<YAML::Node>().as<double>();
+			}
+			else {
+				std::cout << name << " is not a valid ceres fit option or not implemented as variable yet. Ignring this option" << std::endl;
+			}
+		}
+	}
+	catch (...)
+	{
+		std::cout << "Error during read of ceres fit parameters!" << std::endl;
 		return false;
 	}
 	return true;

@@ -23,17 +23,28 @@ using ceres::CENTRAL;
 using ceres::CostFunction;
 using ceres::DynamicNumericDiffCostFunction;
 using ceres::Problem;
-using ceres::Solver;
+//using ceres::Solver;
 
 
 // TODO: Make this a class and give the user the possibility to change fit parameters with some config file!!!
+
+//! Sets some standard options for the fir
+/*!
+   \param options ceres::Solver::Options object that is used in the fit later
+*/
+void SetStandardOprionsParameters(ceres::Solver::Options &options)
+{
+	// todo: add more standards
+	options.minimizer_progress_to_stdout = true;
+}
+
 
 //! Runs the fit
 /*!
    \param sp SimulationParameters object that contains all the infos
    \return true if success
 */
-template <int size> bool RunFit(SimulationParameters &sp)
+template <int size> bool RunFit(SimulationParameters &sp, ceres::Solver::Options &options)
 {
 	Problem problem; // houston? 
 
@@ -60,9 +71,9 @@ template <int size> bool RunFit(SimulationParameters &sp)
 	}
 
 	// init options
-	Solver::Options options;
-	options.minimizer_progress_to_stdout = true;
-	Solver::Summary summary; 
+	//Solver::Options options;
+	//options.minimizer_progress_to_stdout = true;
+	ceres::Solver::Summary summary; 
 
 	// run the fit
 	ceres::Solve(options, &problem, &summary);

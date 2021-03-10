@@ -1,0 +1,4 @@
+fit_options : {
+  function_tolerance : 1e-9,
+  trust_region_strategy_type: DOGLEG
+}
