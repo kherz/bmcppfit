@@ -41,7 +41,7 @@ y_fit.weights(id-3:id+3) = 5;
 
 
 %% openmp threads
-y_fit.threads = 8;
+y_fit.threads = uint8(4);
 
 %% add fit parameter here.
 

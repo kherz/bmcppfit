@@ -217,11 +217,13 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 		std::string fullseq;
 		if (seqpath.parent_path().empty()) { // get path from yaml file
 			fullseq = std::string(yamlpath.parent_path().u8string());
+			if (!fullseq.empty()) {
 #ifdef WIN32
-			fullseq += "\\";
+				fullseq += "\\";
 #else
-			fullseq += "/";
+				fullseq += "/";
 #endif
+			}
 			fullseq += seqfile;
 		}
 		else {
