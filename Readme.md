@@ -8,7 +8,7 @@ It was developed next to [Pulseq-CEST](https://github.com/kherz/pulseq-cest) and
 bmcppfit -p="parameter_file.yaml" -o="results.yaml"
 ```
 
-A detailled description of the parameters etc can be found in the subfolder [Readme]()
+A detailled description of the parameters etc can be found in the subfolder [Readme](tests/matlab/Readme.md)
 
 # Install
 
