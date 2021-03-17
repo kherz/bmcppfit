@@ -1,6 +1,6 @@
 
 # About
-*bmcppfit* is a standalone, multi-thread, Bloch-McConnell fit application. 
+*bmcppfit* is a (work-in-progress) standalone, multi-thread, Bloch-McConnell fit application. 
 It was developed next to [Pulseq-CEST](https://github.com/kherz/pulseq-cest) and is compatible with the pulseq-cest simulation setting files. As the C++ simulation code is very similar, *bmcppfit* might be merged to the Pulseq-CEST project at some point.
 
 *bmcppfit* can be called from the command line with a fit parameter yaml-file as input:
@@ -8,7 +8,7 @@ It was developed next to [Pulseq-CEST](https://github.com/kherz/pulseq-cest) and
 bmcppfit -p="parameter_file.yaml" -o="results.yaml"
 ```
 
-A detailled description of the parameters etc can be found in the subfolder [Readme](tests/matlab/Readme.md)
+A detailled description of the parameters etc can be found in the subfolder [Readme](doc/Readme.md)
 
 # Install
 
