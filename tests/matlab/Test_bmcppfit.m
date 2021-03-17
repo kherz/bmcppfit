@@ -11,16 +11,17 @@ results_path = fullfile(script_fp, 'results');
 mkdir(results_path);
 
 %% 
-seq_fn = fullfile(script_fp,'APTw_3T_003_2uT_8block_DC95_834ms_braintumor.seq');
+seq_fn = 'APTw_3T_003_2uT_8block_DC95_834ms_braintumor.seq';
+seq_fp = fullfile(script_fp,seq_fn);
 yaml_fn = fullfile(script_fp,'GM_3T_001_bmcppfit.yaml');
 
 
 %% run simulation to get z-spec 
-M_z = Run_pulseq_cest_Simulation(seq_fn, yaml_fn);
+M_z = Run_pulseq_cest_Simulation(seq_fp, yaml_fn);
 figure;
 hold on;
 seq = mr.Sequence();
-seq.read(seq_fn);
+seq.read(seq_fp);
 offsets = seq.definitions('offsets_ppm');
 plot(offsets,M_z);
 set ( gca, 'xdir', 'reverse');
@@ -65,19 +66,18 @@ y_init.cest_pool.amide.k = y_fit.fit_params.cest_1_k.start;
 y_init.cest_pool.NOE_1.f = y_fit.fit_params.cest_2_f.start;
 pre_fit_yaml_fn = fullfile(results_path,'GM_3T_001_bmcppfit_before_fit.yaml');
 yaml.WriteYaml(pre_fit_yaml_fn,y_init);
-M_z = Run_pulseq_cest_Simulation(seq_fn, pre_fit_yaml_fn);
+M_z = Run_pulseq_cest_Simulation(seq_fp, pre_fit_yaml_fn);
 plot(offsets,M_z);
 
 %% make yaml file for sim
-yaml_fit_fn = fullfile(results_path,'yaml_fit.yaml');
+yaml_fit_fn = fullfile(script_fp,'yaml_fit.yaml');
 yaml.WriteYaml(yaml_fit_fn, y_fit);
 
 %% results file
 yaml_res = fullfile(results_path,'fit_results.yaml');
 
 %%
-%bin_path = fullfile(script_fp, '..', '..', 'bin', 'bmcppfit');
-[~] = system(['bmcppfit -p=' yaml_fit_fn ' -o=' yaml_res]);
+system(['bmcppfit -p=' yaml_fit_fn ' -o=' yaml_res]);
 
 %% get results 
 y_res = yaml.ReadYaml(yaml_res);
@@ -91,7 +91,7 @@ y_init.cest_pool.NOE_1.f = y_res.cest_2_f;
 %% run new sim for comparison
 new_yaml_fn = fullfile(results_path,'GM_3T_001_bmcppfit_fitted.yaml');
 yaml.WriteYaml(new_yaml_fn,y_init);
-M_z = Run_pulseq_cest_Simulation(seq_fn, new_yaml_fn);
+M_z = Run_pulseq_cest_Simulation(seq_fp, new_yaml_fn);
 plot(offsets,M_z);
 %%
 legend('Original Z-spectrum','Z-spectrum with Initial Parameters', 'Z-spectrum with Fitted Parameters');
