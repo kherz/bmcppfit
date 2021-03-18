@@ -1,0 +1,9 @@
+{
+    "name": "bmcppfit",
+    "version-string": "0.0.1",
+    "dependencies": [
+      "ceres",
+      "yaml-cpp",
+      "argh"
+    ]
+  }

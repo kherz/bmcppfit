@@ -43,13 +43,6 @@ VCPKG_DEFAULT_TRIPLET=x64-windows
 See vcpkg installation guide for more details.
 
 
-## Get prerequisite packages
-Go to the folder where vcpkg is installed and run:
-```
-vcpkg install ceres argh yaml-cpp
-```
-It may take a few minutes to download and build all dependencies.
-
 ## Build bmcppfit
 Clone the repository:
 ```
