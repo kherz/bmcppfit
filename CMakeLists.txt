@@ -39,14 +39,14 @@ endif()
 
 
 set(SOURCE_FILES src/BlochMcConnellSolver.h
-                 src/NLSFit.h
-                 src/SimulationParameters.h
-				 src/SimulationParameters.cpp
-                 src/BMSim_T.h
-				 src/BMSimFit.h
-				 src/YamlIO.h
-				 ${pulseq_SOURCE_DIR}/src/ExternalSequence.cpp
-                 src/main.cpp)
+    src/NLSFit.h
+    src/SimulationParameters.h
+    src/SimulationParameters.cpp
+    src/BMSim_T.h
+    src/BMSimFit.h
+    src/YamlIO.h
+    ${pulseq_SOURCE_DIR}/src/ExternalSequence.cpp
+    src/main.cpp)
 			 		
 add_executable(bmcppfit ${SOURCE_FILES})
 
