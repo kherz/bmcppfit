@@ -326,10 +326,10 @@ public: // TODO: write get and set methods for member variables and make them pr
 	std::vector<FitParameter>* GetFitParams();
 
 	//! Get the scaling of the initial M
-	double GetMagnetizationVectroScale();
+	double GetMagnetizationVectorScale();
 
 	//! Set the scaling of the initial M
-	void SetMagnetizationVectroScale(double s);
+	void SetMagnetizationVectorScale(double s);
 
 	
 protected:

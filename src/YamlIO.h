@@ -178,7 +178,7 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	{
 		auto scaleNode = config["scale"];
 		if (scaleNode.IsDefined()) {
-			sp.SetMagnetizationVectroScale(scaleNode.as<double>());
+			sp.SetMagnetizationVectorScale(scaleNode.as<double>());
 		}
 	}
 	catch (...)

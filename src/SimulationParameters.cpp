@@ -515,13 +515,13 @@ std::vector<long>* SimulationParameters::GetADCPositions()
 
 //! Get the scaling of the initial M
 /*!	\return scale of magnetization vector */
-double SimulationParameters::GetMagnetizationVectroScale()
+double SimulationParameters::GetMagnetizationVectorScale()
 {
 	return scale;
 }
 
 //! Set the scaling of the initial M
-void SimulationParameters::SetMagnetizationVectroScale(double s)
+void SimulationParameters::SetMagnetizationVectorScale(double s)
 {
 	scale = s;
 }
@@ -675,8 +675,8 @@ bool SimulationParameters::RegisterFitParameter(std::string name, double start, 
 			fp.get = std::bind(&SimulationParameters::GetScannerB0Inhom, this);
 		}
 		else if(seglist.at(0).compare("scale") == 0) {
-			fp.set = std::bind(&SimulationParameters::SetMagnetizationVectroScale, this, _1);
-			fp.get = std::bind(&SimulationParameters::GetMagnetizationVectroScale, this);
+			fp.set = std::bind(&SimulationParameters::SetMagnetizationVectorScale, this, _1);
+			fp.get = std::bind(&SimulationParameters::GetMagnetizationVectorScale, this);
 		}
 		else {
 			std::cout << "ERROR: " << name << " is not a valid name for a fit parameter! " << std::endl;

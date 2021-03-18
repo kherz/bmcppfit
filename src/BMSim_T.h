@@ -21,7 +21,7 @@ You should have received a copy of the GNU General Public License along with thi
 
 //! Templated cost functor for the ceres fit
 template <int size> struct CostFunctor {
-	SimulationParameters* sp; /*!< Water Pool */
+	SimulationParameters* sp;
 	//! Runs the Z-spectrum simulation and calculates the residuals
     /*!
        \param x ceres parameters
@@ -49,7 +49,7 @@ template <int size> struct CostFunctor {
 				BlochMcConnellSolver<size> bm_solver = BlochMcConnellSolver<size>(*sp);
 				double accummPhase = 0;
 				Matrix<double, size, 1> M = sp->GetMagnetizationVectors()->col(i); // magnetization vector
-				M *= sp->GetMagnetizationVectroScale(); // use init scale 
+				M *= sp->GetMagnetizationVectorScale(); // use init scale 
 				int startIdx = i == 0 ? 0 : sp->GetADCPositions()->at(i - 1) + 1; // find the idx in the pulseq file from which the current offset starts
 				for (int j = startIdx; j <= sp->GetADCPositions()->at(i); j++)
 				{

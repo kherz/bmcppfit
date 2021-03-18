@@ -46,11 +46,11 @@ fit_params:
   cest_2_f: {start: 0.0036, upper: 0.0225, lower: 0.00045}
  ```
 
- ## -f
- The **f**it algorithm options file.
+## -f
+The **f**it algorithm options file.
 
- The non-linear least squares fit uses the [ceres-solver](http://ceres-solver.org/).
-The -f option is optional, if no settings are provided, the standard ceres non-linear least square fit parameters are used.
+The non-linear least squares fit uses the [ceres-solver](http://ceres-solver.org/).
+The -f option is optional, if no settings are provided, the standard ceres non-linear least squares fit parameters are used.
 
 From the [ceres options](http://ceres-solver.org/nnls_solving.html#solver-options), the following parameters can be changed:
 - trust_region_strategy_type
@@ -63,4 +63,4 @@ From the [ceres options](http://ceres-solver.org/nnls_solving.html#solver-option
 - gradient_tolerance
 - parameter_tolerance
 
-For Bloch-McConnell fitting it can be very helpful to lower the function tolreance as residuals are usually quite small. 
+For Bloch-McConnell fitting it can be very helpful to lower the function tolerance as residuals are usually quite small. 
