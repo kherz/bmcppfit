@@ -32,7 +32,7 @@ using ceres::Problem;
 /*!
    \param options ceres::Solver::Options object that is used in the fit later
 */
-void SetStandardOprionsParameters(ceres::Solver::Options &options)
+void SetStandardOptionsParameters(ceres::Solver::Options &options)
 {
 	// todo: add more standards
 	options.minimizer_progress_to_stdout = true;

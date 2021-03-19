@@ -44,7 +44,7 @@ bool RunBMSimFit(std::string yamlIn, std::string yamlOut, std::string yamlFitOpt
 
 	// init solver options
 	ceres::Solver::Options opts;
-	SetStandardOprionsParameters(opts);
+	SetStandardOptionsParameters(opts);
 	if (!yamlFitOptions.empty())
 		if(!ParseYamlCeresOptions(yamlFitOptions, opts))
 			return EXIT_FAILURE;
