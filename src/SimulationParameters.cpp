@@ -2,7 +2,7 @@
 /*!
 Container class for all simulation related parameters that need to get passed between classes and functions
 
-kai.herz@tuebingen.mpg.de
+Author: Kai Herz <kai.herz@tuebingen.mpg.de>
 
 Copyright 2020 Kai Herz
 

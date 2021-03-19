@@ -2,7 +2,7 @@
 /*!
 Class to solve the Bloch-McConnell equations for multiple pools
 
-kai.herz@tuebingen.mpg.de
+Author: Kai Herz <kai.herz@tuebingen.mpg.de>
 
 Copyright 2020 Kai Herz
 
