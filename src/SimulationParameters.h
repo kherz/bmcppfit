@@ -35,13 +35,6 @@ using namespace Eigen;
 #include <omp.h>
 #else
 #pragma message("OPENMP not defined! Parallelization is not possible")
-
-#if defined(_MSC_VER)
-#pragma message("Add COMPFLAGS=\"$COMPFLAGS /openmp\" to the mex command")
-#elif defined(__GNUG__)
-#pragma message("Add CXXFLAGS=\"$CXXPFLAGS -fopenmp\" to the mex command")
-#endif
-
 #endif
 
 //! Scanner related info
