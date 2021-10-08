@@ -1,4 +1,4 @@
-//!  YamlIO.h
+//!  YamlParser.cpp
 /*!
 Read/write to yaml files
 
@@ -17,17 +17,14 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTH
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
-#pragma once
+#include "YamlParser.h"
 
-#include "yaml-cpp/yaml.h"
-#include "SimulationParameters.h"
-#include "ceres/ceres.h"
+//! Constructor
+YamlParser::YamlParser()
+{
+	seqFilename.clear();
+}
 
-#if __cplusplus >= 201703L
-#include <filesystem>
-#else
-#include <experimental/filesystem>
-#endif
 
 //! Read the parameter yaml file
 /*!
@@ -35,7 +32,7 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
    \param sp SimulationParameters object by reference that gets filled
    \return true if success
 */
-bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
+bool YamlParser::ParseYamlInputStruct(std::string yamlIn, SimFitParameters &sp)
 {
 	YAML::Node config;
 	// try to read the file
@@ -48,7 +45,7 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 		std::cout << "Could not load yaml file " << yamlIn << std::endl;
 		return false;
 	}
-	
+
 	// get data to fit
 	try
 	{
@@ -76,7 +73,7 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 					sp.GetFitDataWeights()->at(sample) = (weights[sample].as<double>());
 			}
 			else {
-				std::cout << "Size of weights (" << n << ") does not match with size of fit data ( " << sp.GetFitDataWeights()->size()  << ")" << std::endl;
+				std::cout << "Size of weights (" << n << ") does not match with size of fit data ( " << sp.GetFitDataWeights()->size() << ")" << std::endl;
 				std::cout << "Ignoring weights!" << std::endl;
 			}
 
@@ -114,10 +111,10 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 			auto k = mt_pool["k"].as<double>();
 			auto dw = mt_pool["dw"].as<double>();
 			std::string sring_ls = mt_pool["lineshape"].as<std::string>();
-			if(sring_ls.compare("Lorentzian") == 0) {
+			if (sring_ls.compare("Lorentzian") == 0) {
 				sp.SetMTPool(MTPool(r1, r2, f, dw, k, Lorentzian));
 			}
-		    else if (sring_ls.compare("SuperLorentzian") == 0) {
+			else if (sring_ls.compare("SuperLorentzian") == 0) {
 				sp.SetMTPool(MTPool(r1, r2, f, dw, k, SuperLorentzian));
 			}
 			else if (sring_ls.compare("None") == 0) {
@@ -140,7 +137,7 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	{
 		auto cest_pools = config["cest_pool"];
 		if (cest_pools.IsDefined()) {
-			sp.InitCESTPoolMemory(cest_pools.size());
+			sp.SetNumberOfCESTPools(cest_pools.size());
 			int i = 0;
 			for (YAML::const_iterator it = cest_pools.begin(); it != cest_pools.end(); ++it) {
 				auto c_pool = it->second.as<YAML::Node>();
@@ -202,43 +199,7 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	if (sp.IsMTActive())
 		M(vecSize - 1) = sp.GetMTPool()->GetFraction();
 	// init with same number as fit data
-	sp.InitMagnetizationVectors(M, sp.GetFitData()->size());
-
-	// read pulseq sequence
-	// if no path is specified for the pulseq file it is assumed to be in the same folder as the yaml file
-	try
-	{
-		auto seq_fn = config["pulseq_file"];
-		std::string seqfile = seq_fn.as<std::string>();
-#if __cplusplus >= 201703L
-		std::filesystem::path seqpath(seqfile);
-		std::filesystem::path yamlpath(yamlIn);
-#else
-		std::experimental::filesystem::path seqpath(seqfile);
-		std::experimental::filesystem::path yamlpath(yamlIn);
-#endif
-		std::string fullseq;
-		if (seqpath.parent_path().empty()) { // get path from yaml file
-			fullseq = std::string(yamlpath.parent_path().u8string());
-			if (!fullseq.empty()) {
-#ifdef WIN32
-				fullseq += "\\";
-#else
-				fullseq += "/";
-#endif
-			}
-			fullseq += seqfile;
-		}
-		else {
-			fullseq = seqfile;
-		}
-		sp.SetExternalSequence(fullseq);
-	}
-	catch (...)
-	{
-		std::cout << "Coul not read pulseq file" << std::endl;
-		return false;
-	}
+	sp.SetInitialMagnetizationVector(M);
 
 	// read ther stuff sequence
 	try
@@ -293,13 +254,57 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
 	sp.numberOfThreads = 1;
 #endif
 
+	// read pulseq sequence
+	// if no path is specified for the pulseq file it is assumed to be in the same folder as the yaml file
+	try
+	{
+		auto seq_fn = config["pulseq_file"];
+		std::string seqfile = seq_fn.as<std::string>();
+#if __cplusplus >= 201703L
+		std::filesystem::path seqpath(seqfile);
+		std::filesystem::path yamlpath(yamlIn);
+#else
+		std::experimental::filesystem::path seqpath(seqfile);
+		std::experimental::filesystem::path yamlpath(yamlIn);
+#endif
+		std::string fullseq;
+		if (seqpath.parent_path().empty()) { // get path from yaml file
+			fullseq = std::string(yamlpath.parent_path().u8string());
+			if (!fullseq.empty()) {
+#ifdef WIN32
+				fullseq += "\\";
+#else
+				fullseq += "/";
+#endif
+			}
+			fullseq += seqfile;
+		}
+		else {
+			fullseq = seqfile;
+		}
+		seqFilename = fullseq;
+	}
+	catch (...)
+	{
+		std::cout << "Could not read pulseq file" << std::endl;
+		return false;
+	}
+
 	// enough for now we come to the rest later
 	sp.SetVerbose(false);
-	
+
 	return true;
 
 }
 
+//! get the parsed seq filename
+/*!
+   \param yamlOut file name of the yaml file
+*/
+std::string YamlParser::GetSeqFilename()
+{
+	return seqFilename;
+}
 
 //! Write the results yaml file
 /*!
@@ -307,7 +312,7 @@ bool ParseYamlInputStruct(std::string yamlIn, SimulationParameters &sp)
    \param fitResult results of the fit
    \return true if success
 */
-bool WriteFitResult(std::string yamlOut, std::vector<FitParameter>* fitResult)
+bool YamlParser::WriteFitResult(std::string yamlOut, std::vector<FitParameter>* fitResult)
 {
 	try
 	{
@@ -335,7 +340,7 @@ bool WriteFitResult(std::string yamlOut, std::vector<FitParameter>* fitResult)
    \param opts ceres::Solver::Options by reference
    \return true if success
 */
-bool ParseYamlCeresOptions(std::string yamlOptionsFile, ceres::Solver::Options & opts)
+bool YamlParser::ParseYamlCeresOptions(std::string yamlOptionsFile, ceres::Solver::Options & opts)
 {
 	YAML::Node config;
 	// try to read the file
@@ -355,7 +360,7 @@ bool ParseYamlCeresOptions(std::string yamlOptionsFile, ceres::Solver::Options &
 		for (YAML::const_iterator it = fit_options.begin(); it != fit_options.end(); ++it) {
 			std::string name = it->first.as<YAML::Node>().as<std::string>();
 			// trust region type
-			if (name.compare("trust_region_strategy_type") == 0)	{
+			if (name.compare("trust_region_strategy_type") == 0) {
 				std::string type = it->second.as<YAML::Node>().as<std::string>();
 				if (type.compare("LEVENBERG_MARQUARDT") == 0) {
 					opts.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
@@ -367,7 +372,7 @@ bool ParseYamlCeresOptions(std::string yamlOptionsFile, ceres::Solver::Options &
 					std::cout << type << " is not a valid trust_region_strategy_type, Using LEVENBERG_MARQUARDT" << std::endl;
 				}
 			}
-			else if(name.compare("max_num_iterations") == 0){
+			else if (name.compare("max_num_iterations") == 0) {
 				opts.max_num_iterations = it->second.as<YAML::Node>().as<int>();
 			}
 			else if (name.compare("max_solver_time_in_seconds") == 0) {
