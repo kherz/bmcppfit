@@ -19,7 +19,7 @@ This is tested on Windows (with Visual Studio 2017) and Ubuntu (with gcc 9.3.0):
 * A compiler with at least C++ 14 standard 
 * [Git](https://git-scm.com/) 
 * [CMake](https://cmake.org/) >= 3.16
-* [vcpkg](https://github.com/microsoft/vcpkg) (If not installed, please follo the steps below. Otherwise continue [here](#build-bmcppfit))
+* [vcpkg](https://github.com/microsoft/vcpkg) (If not installed, please follow the steps below. Otherwise continue [here](#build-bmcppfit))
 
 ## Install vcpkg
 Clone the vcpkg repository
