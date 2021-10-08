@@ -4,22 +4,17 @@
 
 %% where are we ?
 script_path = [];
-if strcmp(mfilename, 'LiveEditorEvaluationHelperESectionEval')
+if contains(mfilename, 'LiveEditorEvaluationHelperESectionEval')
     script_path = fileparts(matlab.desktop.editor.getActiveFilename);
 else
     script_path = fileparts(which(mfilename));
 end
 
-%% add pulseq-cest and the fit executable to the path
+%% add pulseq-cest to the path
 % this is assuming that you chose the folder names according to the readme
 pulseq_cest_path = fullfile(script_path, '..', '..', 'build',  '_deps', 'pulseq_cest-src');
 addpath(genpath(pulseq_cest_path));
 install_pulseqcest;
-bin_dir =  fullfile(script_path, '..', '..', 'install', 'bin');
-if ~contains(getenv('PATH'), bin_dir)
-    setenv('PATH', [getenv('PATH') ';' bin_dir]);
-end
-    
 
 %% make results dir
 results_path = fullfile(script_path, 'results');
@@ -91,7 +86,9 @@ yaml.WriteYaml(yaml_fit_fn, y_fit);
 yaml_res = fullfile(results_path,'fit_results.yaml');
 
 %% run bmcppfit
-system(['bmcppfit -p=' yaml_fit_fn ' -o=' yaml_res]);
+bin_dir =  fullfile(script_path, '..', '..', 'install', 'bin');
+bin_path = fullfile(bin_dir, 'bmcppfit');
+system([bin_path ' -p=' yaml_fit_fn ' -o=' yaml_res]);
 
 %% get results 
 y_res = yaml.ReadYaml(yaml_res);
