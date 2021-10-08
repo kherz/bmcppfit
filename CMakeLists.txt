@@ -40,8 +40,7 @@ endif()
 FetchContent_Declare(
     pulseq_cest
     GIT_REPOSITORY https://github.com/kherz/pulseq-cest/
-	GIT_SHALLOW	ON
-	GIT_TAG 4dc8264497dafa7fc530e67015b7d2c6e7537485
+	GIT_TAG d0600a7bd3b8bf874fc000e1fe1b3f2a6298b635
 )  
 if(NOT pulseq_cest_POPULATED)
 	message(STATUS "Populating pulseq-cest...")
