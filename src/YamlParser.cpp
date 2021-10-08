@@ -1,4 +1,4 @@
-//!  YamlIO.h
+//!  YamlParser.cpp
 /*!
 Read/write to yaml files
 

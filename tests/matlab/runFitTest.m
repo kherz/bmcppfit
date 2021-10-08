@@ -1,7 +1,8 @@
 %% test bmcppfit
-% kai.herz@tuebingen.mpg.de
-% 2021
-
+% simple sanity check:
+% 1. Simulate a Z-spectrum and save results as fit data
+% 2. Change some simulation parameters
+% 3. Try to fit the original data
 %% where are we ?
 script_path = [];
 if contains(mfilename, 'LiveEditorEvaluationHelperESectionEval')
