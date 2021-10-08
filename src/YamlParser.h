@@ -34,8 +34,11 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 class YamlParser
 {
 public:
+	YamlParser();
 	bool ParseYamlInputStruct(std::string yamlIn, SimFitParameters &sp);
-	bool ParseSequenceFileName(std::string yamlIn, FitFramework &fitFramework);
 	bool WriteFitResult(std::string yamlOut, std::vector<FitParameter>* fitResult);
 	bool ParseYamlCeresOptions(std::string yamlOptionsFile, ceres::Solver::Options & opts);
+	std::string GetSeqFilename();
+private:
+	std::string seqFilename;
 };

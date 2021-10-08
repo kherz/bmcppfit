@@ -19,6 +19,13 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 */
 #include "YamlParser.h"
 
+//! Constructor
+YamlParser::YamlParser()
+{
+	seqFilename.clear();
+}
+
+
 //! Read the parameter yaml file
 /*!
    \param yamlIn file name of the yaml file
@@ -247,29 +254,8 @@ bool YamlParser::ParseYamlInputStruct(std::string yamlIn, SimFitParameters &sp)
 	sp.numberOfThreads = 1;
 #endif
 
-	// enough for now we come to the rest later
-	sp.SetVerbose(false);
-
-	return true;
-
-}
-
-bool YamlParser::ParseSequenceFileName(std::string yamlIn, FitFramework &fitFramework)
-{
-	YAML::Node config;
-	// try to read the file
-	try
-	{
-		config = YAML::LoadFile(yamlIn);
-	}
-	catch (...)
-	{
-		std::cout << "Could not load yaml file " << yamlIn << std::endl;
-		return false;
-	}
-
 	// read pulseq sequence
-    // if no path is specified for the pulseq file it is assumed to be in the same folder as the yaml file
+	// if no path is specified for the pulseq file it is assumed to be in the same folder as the yaml file
 	try
 	{
 		auto seq_fn = config["pulseq_file"];
@@ -296,19 +282,29 @@ bool YamlParser::ParseSequenceFileName(std::string yamlIn, FitFramework &fitFram
 		else {
 			fullseq = seqfile;
 		}
-		if (!fitFramework.SetExternalSequence(fullseq)) {
-			std::cout << "Could not read pulseq file" << std::endl;
-			return false;
-		}
+		seqFilename = fullseq;
 	}
 	catch (...)
 	{
 		std::cout << "Could not read pulseq file" << std::endl;
 		return false;
 	}
+
+	// enough for now we come to the rest later
+	sp.SetVerbose(false);
+
 	return true;
+
 }
 
+//! get the parsed seq filename
+/*!
+   \param yamlOut file name of the yaml file
+*/
+std::string YamlParser::GetSeqFilename()
+{
+	return seqFilename;
+}
 
 //! Write the results yaml file
 /*!

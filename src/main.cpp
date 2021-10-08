@@ -3,7 +3,7 @@ Entry funtion
 
 Author: Kai Herz <kai.herz@tuebingen.mpg.de>
 
-Copyright 2020 Kai Herz
+Copyright 2021 Kai Herz
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -86,42 +86,51 @@ int main(int argc, char** argv)
 	if (!ymlParser.ParseYamlInputStruct(paramFile, sfp))
 		return EXIT_FAILURE;
 
-	// init cost functor
+	// check if seq filename was read
+	if (ymlParser.GetSeqFilename().empty()) {
+		cout << "ERROR: Could not fing .seq filename in parameter file." << endl;
+		return EXIT_FAILURE;
+	}
+
+	// load sequence
 	FitFramework fitFramework(sfp);
-	if(!ymlParser.ParseSequenceFileName(paramFile, fitFramework))
+	if(!fitFramework.SetExternalSequence(ymlParser.GetSeqFilename()))
 		return EXIT_FAILURE;
 
-	// run the fit
-	Problem problem; // houston? 
+	// ---------- everything is read, now run the fit ----------//
+	//init all variables
+	Problem problem;                                                   // houston? 
+	ceres::Solver::Summary summary;                                    // summary for output
+	CostFunctor* costFunc = new CostFunctor();                         // the cost functor where the simulation takes place
+	costFunc->fitFramework = &fitFramework;                            // set the simulation parameters
+	DynamicNumericDiffCostFunction < CostFunctor >* costFunctionDiff = 
+		new DynamicNumericDiffCostFunction < CostFunctor >(costFunc);  // the numeric diff function
 
-    //prepare fit data
-	std::vector<FitParameter>* fp = fitFramework.GetSimFitParameters()->GetFitParams(); // thats the fit parameters
-	int num_params = fp->size();
-	std::vector<double> x; // lets make them ceres compatible
-	for (int i = 0; i < num_params; i++)
+    // save the initial start values in a ceres compatible vector
+	std::vector<FitParameter>* fp = fitFramework.GetSimFitParameters()->GetFitParams(); 
+	std::vector<double> x;
+	for (int i = 0; i < fp->size(); i++) {
 		x.push_back(fp->at(i).get());
-
-	// prepare cost function
-	auto costFunc = new CostFunctor(); // the cost functor where the simulation takes place
-	costFunc->fitFramework = &fitFramework; // set the simulation parameters
-	auto costFunctionDiff = new DynamicNumericDiffCostFunction < CostFunctor >(costFunc);
-	costFunctionDiff->AddParameterBlock(x.size()); // number of parametersparameters
+	}
+		
+	// set the parameters and residuals for the differentiator
+	costFunctionDiff->AddParameterBlock(x.size()); 
 	costFunctionDiff->SetNumResiduals(fitFramework.GetSimFitParameters()->GetFitData()->size()); // a single residual for each z-spectrum entry
+	
+	// add the information to the problem
 	problem.AddResidualBlock(costFunctionDiff, NULL, x.data());
-
-	// set upper and lower boundaries
-	for (int i = 0; i < num_params; i++) {
+	for (int i = 0; i < fp->size(); i++) {
 		problem.SetParameterLowerBound(x.data(), i, fp->at(i).lower);
 		problem.SetParameterUpperBound(x.data(), i, fp->at(i).upper);
 	}
 
-	// init options
-	ceres::Solver::Summary summary;
-
 	// run the fit
 	ceres::Solve(options, &problem, &summary);
+
+	// output
 	std::cout << summary.BriefReport() << "\n";
 
+	// write results to yml file
 	if (!ymlParser.WriteFitResult(outFile, costFunc->fitFramework->GetSimFitParameters()->GetFitParams()))
 		return EXIT_FAILURE;
 

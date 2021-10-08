@@ -191,14 +191,20 @@ std::vector<FitParameter>* SimFitParameters::GetFitParams()
 }
 
 
-
+//! Constructor
+/*!	\param simFitParams initial SimFitParameters object */
 FitFramework::FitFramework(SimFitParameters& simFitParams) : BMCSim(simFitParams) {
 	sfp = &simFitParams;
 }
 
-
+//! Copy Constructor
+/*!	
+    The copy constructor is needed to spread the solver across threads
+    \param ff FitFramework object that should be copied
+*/
 FitFramework::FitFramework(FitFramework& ff) : BMCSim(*(ff.GetSimFitParameters()))
 {
+	// copy all parameters
 	sfp = ff.sfp;
 	seq = ff.seq;
 	sequenceLoaded = ff.sequenceLoaded;
@@ -207,26 +213,45 @@ FitFramework::FitFramework(FitFramework& ff) : BMCSim(*(ff.GetSimFitParameters()
 	Mvec = ff.Mvec;
 }
 
+//! Get the Simulation and fit parameters
+/*!	\return pointer to SimFitParameters object */
 SimFitParameters* FitFramework::GetSimFitParameters()
 {
 	return sfp;
 }
 
+//! Get the Exxternal Sequence
+/*!	\return pointer to ExternalSequence object */
 ExternalSequence* FitFramework::GetExternalSequence()
 {
 	return &seq;
 }
 
+//! Run a specific event block
+/*!
+	Wrapper for protected BMCSim function
+    \param M reference to current magnetization vector
+    \param accumPhase reference to current accumulated phase
+    \param seqBlock pointer to specific ebent block
+*/
 void FitFramework::RunNonADCEventBlock(Eigen::VectorXd &M, float &accumPhase, SeqBlock* seqBlock)
 {
 	RunEventBlock(M, accumPhase, seqBlock);
 }
 
+//! Update the Bloch matrix matrix
+/*! Wrapper for protected solver method*/
 void FitFramework::UpdateSolver()
 {
 	solver->UpdateSimulationParameters(*sfp);
 }
 
+//! Load external Pulseq sequence
+/*!
+    Wraps BMCSim load function and decodes adc positions for parallel evaluation
+	\param path full filepath of the .seq-file
+	\return true if sequence could be loaded and contains adc events
+*/
 bool FitFramework::SetExternalSequence(std::string path)
 {
 	ExternalSequence extSeq;
