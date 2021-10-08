@@ -76,21 +76,21 @@ cmake ../ -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_TOOLCHAIN_FILE=${PATH_TO_VCP
 #### Using the CMake GUI
 * Open the CMake GUI and set the source and build directory accordingly
 
-![CMake 1](doc/cmake_1.png)
+![CMake 1](doc/cmake_1.PNG)
 
 * Click configure and set the plattform and toolchain option accordingly.
 
-![CMake 2](doc/cmake_2.png)
+![CMake 2](doc/cmake_2.PNG)
 
 * Choose the *vcpkg* toolchain file
 
-![CMake 3](doc/cmake_3.png)
+![CMake 3](doc/cmake_3.PNG)
 
 The configuration process starts now and might take a while the first time since all external packages need to be downloaded and build.
 
 * Once the configuration is done, set the install directory accordingly.
 
-![CMake 4](doc/cmake_4.png)
+![CMake 4](doc/cmake_4.PNG)
 
 * Finally click *Generate* and *Open Project*
 
