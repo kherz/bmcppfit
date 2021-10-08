@@ -63,10 +63,39 @@ make install
 ```
 
 ### Windows with Visual Studio
+
+You can either use the [command line](#using-the-cmake-command-line) or the [GUI](#using-the-cmake-gui)
+
+#### Using the CMake command line
 ```
 cmake ../ -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_TOOLCHAIN_FILE=${PATH_TO_VCPKG_INSTALLATION}/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_GENERATOR_PLATFORM=${Your Platform: This is x64 if you build for a x64 system}
 ```
+
 * Open Visual Studio Solution bmcppfit.sln
+
+#### Using the CMake GUI
+* Open the CMake GUI and set the source and build directory accordingly
+
+![CMake 1](doc/cmake_1.png)
+
+* Click configure and set the plattform and toolchain option accordingly.
+
+![CMake 2](doc/cmake_2.png)
+
+* Choose the *vcpkg* toolchain file
+
+![CMake 3](doc/cmake_3.png)
+
+The configuration process starts now and might take a while the first time since all external packages need to be downloaded and build.
+
+* Once the configuration is done, set the install directory accordingly.
+
+![CMake 4](doc/cmake_4.png)
+
+* Finally click *Generate* and *Open Project*
+
+#### Build with visual Studio
+
 * Change Cofiguration to Release
 * Build **ALL_BUILD**
 * Build **INSTALL**
