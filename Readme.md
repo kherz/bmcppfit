@@ -20,7 +20,7 @@ Follow these steps to build the docker image:
 Clone the repository and go to the Docker folder:
 ```
 git clone https://github.com/kherz/bmcppfit
-cd bmcppfit/Docker
+cd bmcppfit/docker
 ```
 Build the container (this will take a while)
 ```
