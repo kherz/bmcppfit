@@ -27,8 +27,8 @@ include(FetchContent)
 FetchContent_Declare(
     pulseq
     GIT_REPOSITORY https://github.com/pulseq/pulseq.git
-	GIT_SHALLOW	ON
-	GIT_TAG v1.3.1
+    GIT_SHALLOW ON
+    GIT_TAG v1.3.1
 )  
 if(NOT pulseq_POPULATED)
 	message(STATUS "Populating pulseq...")
@@ -40,7 +40,7 @@ endif()
 FetchContent_Declare(
     pulseq_cest
     GIT_REPOSITORY https://github.com/kherz/pulseq-cest/
-	GIT_TAG d0600a7bd3b8bf874fc000e1fe1b3f2a6298b635
+    GIT_TAG d0600a7bd3b8bf874fc000e1fe1b3f2a6298b635
 )  
 if(NOT pulseq_cest_POPULATED)
 	message(STATUS "Populating pulseq-cest...")
