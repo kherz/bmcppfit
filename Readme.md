@@ -31,7 +31,7 @@ Enter the container with a mounted tmp folder
 sudo docker run --rm --it -v /tmp:/tmp bmcppfit
 ```
 You can now use the container and save intermediate data in /tmp. 
-You can call the fit andrun the example with:
+You can run the example with:
 ```
 /opt/code/bmcppfit/install/bin/bmcppfit -p=/opt/code/bmcppfit/tests/matlab/yaml_fit.yaml -o=/tmp/fit_results.yml
 ```
