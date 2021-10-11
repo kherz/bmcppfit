@@ -52,12 +52,12 @@ endif()
 set(SOURCE_FILES 
     ${pulseq_cest_SOURCE_DIR}/pulseq-cest-sim/src/SimulationParameters.cpp
     ${pulseq_cest_SOURCE_DIR}/pulseq-cest-sim/src/BMCSim.cpp
-	${pulseq_SOURCE_DIR}/src/ExternalSequence.h
+    ${pulseq_SOURCE_DIR}/src/ExternalSequence.h
     ${pulseq_SOURCE_DIR}/src/ExternalSequence.cpp
     src/BMSimFit.h
     src/BMSimFit.cpp
     src/YamlParser.h
-	src/YamlParser.cpp
+    src/YamlParser.cpp
     src/main.cpp)
 			 		
 add_executable(bmcppfit ${SOURCE_FILES})
@@ -73,9 +73,6 @@ find_package(yaml-cpp CONFIG REQUIRED)
 target_link_libraries(bmcppfit PRIVATE yaml-cpp)
 find_package(argh CONFIG REQUIRED)
 target_link_libraries(bmcppfit PRIVATE argh)
-	
-include_directories(${pulseq_SOURCE_DIR}/src)
-include_directories(src/pulseqcest)
 
 find_package(OpenMP)
 if(OpenMP_CXX_FOUND)
