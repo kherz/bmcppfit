@@ -28,7 +28,7 @@ sudo docker build -t bmcppfit:latest .
 ```
 Enter the container with a mounted tmp folder
 ```
-sudo docker run --rm --it -v /tmp:/tmp bmcppfit
+sudo docker run --rm -it -v /tmp:/tmp bmcppfit
 ```
 You can now use the container and save intermediate data in /tmp. 
 You can run the example with:
