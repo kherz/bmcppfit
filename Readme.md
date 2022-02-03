@@ -16,15 +16,9 @@ You can either use [docker](#install-with-docker) or install it [locally](#insta
 
 # Install with docker
 
-Follow these steps to build the docker image:
-Clone the repository and go to the Docker folder:
+Build the container with the [Dockerfile](docker/Dockerfile) (this will take a while)
 ```
-git clone https://github.com/kherz/bmcppfit
-cd bmcppfit/docker
-```
-Build the container (this will take a while)
-```
-sudo docker build -t bmcppfit:latest .
+sudo docker build https://github.com/kherz/bmcppfit.git#:docker -t bmcppfit:latest
 ```
 Enter the container with a mounted tmp folder
 ```
