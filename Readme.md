@@ -1,3 +1,5 @@
+![Build Badge](https://github.com/kherz/bmcppfit/actions/workflows/build.yml/badge.svg)
+
 
 # About
 *bmcppfit* is a (work-in-progress) standalone, multi-thread, Bloch-McConnell fit application. 
@@ -12,13 +14,19 @@ A detailled description of the parameters etc can be found in the subfolder [Rea
 
 # Install
 
-You can either use [docker](#install-with-docker) or install it [locally](#install-locally)
+You can either download the latest pre-compiled binaries from the GitHub [workflow](https://github.com/kherz/bmcppfit/actions/workflows/build.yml), use [docker](#install-with-docker) or install it [locally](#install-locally).
 
 # Install with docker
 
-Build the container with the [Dockerfile](docker/Dockerfile) (this will take a while)
+Follow these steps to build the docker image:
+Clone the repository and go to the Docker folder:
 ```
-sudo docker build https://github.com/kherz/bmcppfit.git#:docker -t bmcppfit:latest
+git clone https://github.com/kherz/bmcppfit
+cd bmcppfit/docker
+```
+Build the container (this will take a while)
+```
+sudo docker build -t bmcppfit:latest .
 ```
 Enter the container with a mounted tmp folder
 ```
@@ -32,8 +40,6 @@ You can run the example with:
 The fit results are now in /tmp/fit_results.yml
 
 # Install locally
-
-This is tested on Windows (with Visual Studio 2017) and Ubuntu (with gcc 9.3.0):
 
 ## Prerequisites 
 
@@ -73,54 +79,18 @@ and prepare build directories:
 ```
 cd bmcppfit
 mkdir build
-cd build
 ```
-Go on depending on your compiler:
-### Linux with GCC 
+Configure CMake (will take a while if vcpkg packages need to be built):
 ```
-cmake ../ -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_TOOLCHAIN_FILE=${PATH_TO_VCPKG_INSTALLATION}/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release
-make
-make install
+cmake -B build -DCMAKE_TOOLCHAIN_FILE=${PATH_TO_VCPKG_INSTALLATION}/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release
 ```
-
-### Windows with Visual Studio
-
-You can either use the [command line](#using-the-cmake-command-line) or the [GUI](#using-the-cmake-gui)
-
-#### Using the CMake command line
+Run the build process: 
 ```
-cmake ../ -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_TOOLCHAIN_FILE=${PATH_TO_VCPKG_INSTALLATION}/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_GENERATOR_PLATFORM=${Your Platform: This is x64 if you build for a x64 system}
+cmake --build build --config Release
 ```
-
-* Open Visual Studio Solution bmcppfit.sln
-
-#### Using the CMake GUI
-* Open the CMake GUI and set the source and build directory accordingly
-
-![CMake 1](doc/cmake_1.PNG)
-
-* Click configure and set the plattform and toolchain option accordingly.
-
-![CMake 2](doc/cmake_2.PNG)
-
-* Choose the *vcpkg* toolchain file
-
-![CMake 3](doc/cmake_3.PNG)
-
-The configuration process starts now and might take a while the first time since all external packages need to be downloaded and build.
-
-* Once the configuration is done, set the install directory accordingly.
-
-![CMake 4](doc/cmake_4.PNG)
-
-* Finally click *Generate* and *Open Project*
-
-#### Build with visual Studio
-
-* Change Cofiguration to Release
-* Build **ALL_BUILD**
-* Build **INSTALL**
-
-### Done
-The binaries are now in *bmcppfit/install/bin*
+Run *install* to copy the binary and dependencies to the install directory
+```
+cmake --install build --prefix install
+```
+The binaries are now in *bmcppfit/install/bin*.
 
