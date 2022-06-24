@@ -16,7 +16,7 @@ A detailled description of the parameters etc can be found in the subfolder [Rea
 
 # Install
 
-You can either download the latest pre-compiled binaries from the GitHub [workflow](https://github.com/kherz/bmcppfit/actions/workflows/build.yml), use [docker](#install-with-docker) or install it [locally](#install-locally).
+You can either download the latest pre-compiled binaries from the GitHub [workflow](https://github.com/kherz/bmcppfit/actions/workflows/build.yml) or [Releases](https://github.com/kherz/bmcppfit/releases), use [docker](#install-with-docker) or install it [locally](#install-locally).
 
 # Install with docker
 
