@@ -88,14 +88,22 @@ int main(int argc, char** argv)
 
 	// check if seq filename was read
 	if (ymlParser.GetSeqFilename().empty()) {
-		cout << "ERROR: Could not fing .seq filename in parameter file." << endl;
+		cout << "ERROR: Could not find .seq filename in parameter file." << endl;
 		return EXIT_FAILURE;
 	}
 
 	// load sequence
 	FitFramework fitFramework(sfp);
-	if(!fitFramework.SetExternalSequence(ymlParser.GetSeqFilename()))
+	if(!fitFramework.SetExternalSequence(ymlParser.GetSeqFilename())) {
+		cout << "ERROR: Could not load .seq file" << endl;
 		return EXIT_FAILURE;
+	}
+
+	// check if seq file is valid for fit data
+	if (sfp.GetADCPositions()->size() != sfp.GetFitData()->size()) {
+		cout << "ERROR: Number of ADC events in .seq file (" << sfp.GetADCPositions()->size()  << ") and fit data points (" << sfp.GetFitData()->size() << ") do not match!" << endl;
+		return EXIT_FAILURE;
+	}
 
 	// ---------- everything is read, now run the fit ----------//
 	//init all variables
