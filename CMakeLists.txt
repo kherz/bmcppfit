@@ -11,15 +11,9 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
    set(CMAKE_CXX_FLAGS_RELEASE "-O2 ${CMAKE_CXX_FLAGS_RELEASE}")
 endif()
 
-# we need at least c++ 14 standard for experimental filesystem
-include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag(-std=c++17 HAVE_FLAG_STD_CXX17)
-if(HAVE_FLAG_STD_CXX17)
-    set (CMAKE_CXX_STANDARD 17)
-else()
-    set (CMAKE_CXX_STANDARD 14)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+   ADD_DEFINITIONS(-D_SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING)
 endif()
-
 
 include(FetchContent)
 
@@ -61,6 +55,12 @@ set(SOURCE_FILES
     src/main.cpp)
 			 		
 add_executable(bmcppfit ${SOURCE_FILES})
+# we need at least c++ 14 standard for experimental filesystem
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+   target_compile_features(bmcppfit PUBLIC cxx_std_14)
+else()
+   target_compile_features(bmcppfit PUBLIC cxx_std_17)
+endif()
 
 include_directories(${pulseq_SOURCE_DIR}/src)
 include_directories(${pulseq_cest_SOURCE_DIR}/pulseq-cest-sim/src/)
@@ -85,9 +85,10 @@ install(TARGETS bmcppfit)
 # todo: we assume dynamic linking on windows here, that should be checked
 IF (WIN32)
 install(CODE [[
-file(COPY ${CMAKE_CURRENT_BINARY_DIR}/Release/yaml-cpp.dll DESTINATION ${CMAKE_INSTALL_PREFIX}/bin) 
-file(COPY ${CMAKE_CURRENT_BINARY_DIR}/Release/ceres.dll DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
-file(COPY ${CMAKE_CURRENT_BINARY_DIR}/Release/gflags.dll DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
-file(COPY ${CMAKE_CURRENT_BINARY_DIR}/Release/glog.dll DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+file(COPY ${CMAKE_CURRENT_BINARY_DIR}/build/vcpkg_installed/x64-windows/bin/yaml-cpp.dll DESTINATION ${CMAKE_INSTALL_PREFIX}/bin) 
+file(COPY ${CMAKE_CURRENT_BINARY_DIR}/build/vcpkg_installed/x64-windows/bin/ceres.dll DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+file(COPY ${CMAKE_CURRENT_BINARY_DIR}/build/vcpkg_installed/x64-windows/bin/gflags.dll DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+file(COPY ${CMAKE_CURRENT_BINARY_DIR}/build/vcpkg_installed/x64-windows/bin/glog.dll DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 ]])
 ENDIF()
+
