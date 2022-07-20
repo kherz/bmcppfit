@@ -37,7 +37,7 @@ sudo docker run --rm -it -v /tmp:/tmp bmcppfit
 You can now use the container and save intermediate data in /tmp. 
 You can run the example with:
 ```
-/opt/code/bmcppfit/install/bin/bmcppfit -p=/opt/code/bmcppfit/tests/matlab/yaml_fit.yaml -o=/tmp/fit_results.yml
+/opt/code/bmcppfit/install/bin/bmcppfit -p=/opt/code/bmcppfit/tests/matlab/FP_GM_3T_001_bmcppfit.yaml -o=/tmp/fit_results.yml
 ```
 The fit results are now in /tmp/fit_results.yml
 

@@ -1,8 +1,8 @@
-water_pool: {f: 1.0, t1: 1.3, t2: 0.075002}
-mt_pool: {f: 0.0495, t1: 1.3, t2: 9.0E-6, k: 40.0, dw: 0.0, lineshape: SuperLorentzian}
+water_pool: {f: 1.0, t1: 1.3, t2: 0.074988}
+mt_pool: {f: 0.049708, t1: 1.3, t2: 9.0E-6, k: 40.0, dw: -3.0, lineshape: Lorentzian}
 cest_pool:
-  amide: {f: 0.0064865, t1: 1.3, t2: 0.1, k: 29.963216, dw: 3.5}
-  NOE_1: {f: 0.044988, t1: 1.3, t2: 0.005, k: 16.0, dw: -3.5}
+  amide: {f: 0.0064865, t1: 1.3, t2: 0.1, k: 30.004445, dw: 3.5}
+  NOE_1: {f: 0.045005, t1: 1.3, t2: 0.005, k: 16.0, dw: -3.5}
 b0: 3.0
 gamma: 267.5153
 b0_inhom: 0.0

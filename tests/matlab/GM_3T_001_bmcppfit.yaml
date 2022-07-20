@@ -31,8 +31,8 @@ mt_pool: {
   t1: 1.3,
   t2: 9e-6,
   k: 40,
-  dw: 0,
-  lineshape: 'SuperLorentzian'
+  dw: -3,
+  lineshape: 'Lorentzian'
 }
 
 ### CEST pool(s)

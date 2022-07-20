@@ -91,7 +91,7 @@ bool SimFitParameters::RegisterFitParameter(std::string name, double start, doub
 	
 	// we can choose the fit parameters dynamically by binding the corresponding get and set funtions 
 	// in the SimulationParameter object
-	if (seglist.size() == 1) { // single word ->  b0 shift
+	if (seglist.size() == 1) { // single word ->  b0 shift, Zi or relative B1
 		if (seglist.at(0).compare("b0shift") == 0) {
 			fp.set = std::bind(&SimFitParameters::SetScannerB0Inhom, this, _1);
 			fp.get = std::bind(&SimFitParameters::GetScannerB0Inhom, this);
@@ -100,13 +100,17 @@ bool SimFitParameters::RegisterFitParameter(std::string name, double start, doub
 			fp.set = std::bind(&SimFitParameters::SetMagnetizationVectorScale, this, _1);
 			fp.get = std::bind(&SimFitParameters::GetMagnetizationVectorScale, this);
 		}
+		else if (seglist.at(0).compare("relB1") == 0) {
+			fp.set = std::bind(&SimFitParameters::SetScannerRelB1, this, _1);
+			fp.get = std::bind(&SimFitParameters::GetScannerRelB1, this);
+		}
 		else {
 			std::cout << "ERROR: " << name << " is not a valid name for a fit parameter! " << std::endl;
 		    return false;
 		}
 	}
-	else if (seglist.size() == 2) { // two words -> has to be water
-		if (seglist.at(0).compare("water") == 0)	{
+	else if (seglist.size() == 2) { // two words -> water or MT
+		if (seglist.at(0).compare("water") == 0) {
 			if (seglist.at(1).compare("t1") == 0) {
 				fp.set = std::bind(&WaterPool::SetT1, this->GetWaterPool(), _1);
 				fp.get = std::bind(&WaterPool::GetT1, this->GetWaterPool());
@@ -117,6 +121,32 @@ bool SimFitParameters::RegisterFitParameter(std::string name, double start, doub
 			}
 			else {
 				std::cout << "ERROR: Can only fit T1 and T2 of water, but not " << seglist.at(1) << std::endl;
+				return false;
+			}
+		}
+		else if (seglist.at(0).compare("mt") == 0) {
+			if (seglist.at(1).compare("t1") == 0) {
+				fp.set = std::bind(&MTPool::SetT1, this->GetMTPool(), _1);
+				fp.get = std::bind(&MTPool::GetT1, this->GetMTPool());
+			}
+			else if (seglist.at(1).compare("t2") == 0) {
+				fp.set = std::bind(&MTPool::SetT2, this->GetMTPool(), _1);
+				fp.get = std::bind(&MTPool::GetT2, this->GetMTPool());
+			}
+			else if (seglist.at(1).compare("k") == 0) {
+				fp.set = std::bind(&MTPool::SetExchangeRateInHz, this->GetMTPool(), _1);
+				fp.get = std::bind(&MTPool::GetExchangeRateInHz, this->GetMTPool());
+			}
+			else if (seglist.at(1).compare("dw") == 0) {
+				fp.set = std::bind(&MTPool::SetShiftinPPM, this->GetMTPool(), _1);
+				fp.get = std::bind(&MTPool::GetShiftinPPM, this->GetMTPool());
+			}
+			else if (seglist.at(1).compare("f") == 0) {
+				fp.set = std::bind(&MTPool::SetFraction, this->GetMTPool(), _1);
+				fp.get = std::bind(&MTPool::GetFraction, this->GetMTPool());
+			}
+			else {
+				std::cout << "ERROR: Can only fit T1, T2, k, f and dw of mt pool, but not " << seglist.at(2) << std::endl;
 				return false;
 			}
 		}

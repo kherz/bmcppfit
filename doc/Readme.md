@@ -5,7 +5,7 @@ The *bmcppfit* application runs a Bloch-McConnell simulation on the .seq-file an
 ## -p
 The fit **p**arameter file.
 
-The .yaml-file structure is similar to the on in the Pulseq-CEST project. See the example [file](../tests/matlab/yaml_fit.yaml) to see how to define them. The following parameters can be set:
+The .yaml-file structure is similar to the on in the Pulseq-CEST project. See the example [file](../tests/matlab/FP_GM_3T_001_bmcppfit.yaml) to see how to define them. The following parameters can be set:
 
 - water_pool: f, t1 and t2
 - mt_pool (optional): f, t1, t2, k, dw and lineshape
@@ -22,9 +22,15 @@ The .yaml-file structure is similar to the on in the Pulseq-CEST project. See th
 - threads: number of openMP threads
 - fit_params: the parameters that should be fitted. Every parameter has a start value as well as an upper and lower bound. The following parameters can be fitted:
     - b0shift: B0 field shift (ppm)
-    - scale
+    - scale: initial magnetization after readout
+    - relB1: relative B1 
     - water_t1: t1 of water pool
     - water_t2: t2 of water pool
+    - mt_t1: t1 of mt pool 
+    - mt_t2: t2 of mt pool 
+    - mt_k: exchange rate [Hz] of mt pool 
+    - mt_dw: shift [ppm] of mt pool 
+    - mt_f: fraction of mt pool 
     - cest_n_t1: t1 of cest pool n
     - cest_n_t2: t2 of cest pool n
     - cest_n_k: exchange rate [Hz] of cest pool n
