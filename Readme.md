@@ -16,23 +16,17 @@ A detailled description of the parameters etc can be found in the subfolder [Rea
 
 # Install
 
-You can either download the latest pre-compiled binaries from the GitHub [workflow](https://github.com/kherz/bmcppfit/actions/workflows/build.yml) or [Releases](https://github.com/kherz/bmcppfit/releases), use [docker](#install-with-docker) or install it [locally](#install-locally).
+You can either download the latest pre-compiled binaries from the GitHub [workflow](https://github.com/kherz/bmcppfit/actions/workflows/build.yml) or [Releases](https://github.com/kherz/bmcppfit/releases), use [docker](#docker) or install it [locally](#install-locally).
 
-# Install with docker
+# Docker
 
-Follow these steps to build the docker image:
-Clone the repository and go to the Docker folder:
+You can pull the latest image from [dockerhub](https://hub.docker.com/repository/docker/kherz/bmcppfit):
 ```
-git clone https://github.com/kherz/bmcppfit
-cd bmcppfit/docker
+docker pull kherz/bmcppfit:latest
 ```
-Build the container (this will take a while)
+Afterwards, enter the container with a mounted tmp folder:
 ```
-sudo docker build -t bmcppfit:latest .
-```
-Enter the container with a mounted tmp folder
-```
-sudo docker run --rm -it -v /tmp:/tmp bmcppfit
+docker run --rm -it -v /tmp:/tmp kherz/bmcppfit
 ```
 You can now use the container and save intermediate data in /tmp. 
 You can run the example with:
