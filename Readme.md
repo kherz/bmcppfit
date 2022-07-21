@@ -20,7 +20,7 @@ You can either download the latest pre-compiled binaries from the GitHub [workfl
 
 # Docker
 
-You can pull the latest image from [dockerhub](https://hub.docker.com/repository/docker/kherz/bmcppfit):
+You can pull the latest image from [dockerhub](https://hub.docker.com/r/kherz/bmcppfit):
 ```
 docker pull kherz/bmcppfit:latest
 ```
